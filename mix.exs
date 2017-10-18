@@ -7,9 +7,21 @@ defmodule ExAudit.Mixfile do
       version: "0.1.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
-      deps: deps()
+      deps: deps(),
+      elixirc_paths: paths(Mix.env)
     ]
   end
+
+  def paths(:test) do
+    paths(:default) ++ ["./example"]
+  end
+
+  def paths(:default) do
+    ["./lib"]
+  end
+
+  def paths(_), do: paths(:default)
+
 
   # Run "mix help compile.app" to learn about applications.
   def application do
@@ -21,7 +33,8 @@ defmodule ExAudit.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ecto, "~> 2.2"}
+      {:ecto, "~> 2.2"},
+      {:postgrex, "~> 0.13.3"}
     ]
   end
 end

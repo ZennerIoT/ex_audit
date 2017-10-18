@@ -9,14 +9,11 @@ to track changes to entities in your database.
 
 ## Setup
 
-You have to hook ExAudit to your repo, by adding
-
-`use ExAudit.Repo, otp_app: :my_app` here:
+You have to hook ExAudit to your repo, by replacing `Ecto.Repo` with `ExAudit.Repo`:
 
 ```elixir
 defmodule MyApp.Repo
-  use ExAudit.Repo, otp_app: :my_app # <- before Ecto.Repo
-  use Ecto.Repo, otp_app: :my_app
+  use ExAudit.Repo, otp_app: :my_app
 end
 ```
 
