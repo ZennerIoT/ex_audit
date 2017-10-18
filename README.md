@@ -5,6 +5,8 @@ Ecto auditing library that transparently tracks changes and can revert them.
 ExAudit plugs right into your ecto repositories and hooks all the data mutating Ecto.Repo functions
 to track changes to entities in your database.
 
+**Please note that this project is still under development and not all of the features are done until this notice disappears**
+
 ## Setup
 
 You have to hook ExAudit to your repo, by adding
