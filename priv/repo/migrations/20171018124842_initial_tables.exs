@@ -20,6 +20,7 @@ defmodule ExAudit.Test.Repo.Migrations.InitialTables do
     create table(:comments) do
       add :author_id, references(:users, on_update: :update_all, on_delete: :delete_all)
       add :body, :text
+      add :blog_post_id, references(:blog_post, on_update: :update_all, on_delete: :delete_all)
 
       timestamps(type: :utc_datetime)
     end
@@ -38,7 +39,7 @@ defmodule ExAudit.Test.Repo.Migrations.InitialTables do
       add :action, :string
 
       # when has this happened
-      add :recorded_at, :datetime
+      add :recorded_at, :utc_datetime
 
       # optional fields that you can define yourself
       # for example, it's a good idea to track who did the change

@@ -3,8 +3,10 @@ defmodule ExAudit.Test.Comment do
   import Ecto.Changeset
 
   schema "blog_post" do
-    has_one :author, Test.User
+    belongs_to :author, ExAudit.Test.User
     field :body, :string
+
+    belongs_to :blog_post, ExAudit.Test.BlogPost
 
     timestamps(type: :utc_datetime)
   end

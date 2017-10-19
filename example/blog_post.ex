@@ -5,10 +5,10 @@ defmodule ExAudit.Test.BlogPost do
   schema "blog_post" do
     field :title, :string
 
-    has_one :author, Test.User
-    embeds_many :sections, Test.BlogPost.Section
+    belongs_to :author, ExAudit.Test.User
+    embeds_many :sections, ExAudit.Test.BlogPost.Section
 
-    has_many :comments, Test.Comment
+    has_many :comments, ExAudit.Test.Comment
 
     timestamps(type: :utc_datetime)
   end

@@ -5,7 +5,7 @@ defmodule ExAudit.Test.Version do
   schema "versions" do
     field :patch, ExAudit.Type.Patch
     field :entity_id, :integer
-    field :entity_schema, :string
+    field :entity_schema, ExAudit.Type.Schema
     field :action, ExAudit.Type.Action
     field :recorded_at, :utc_datetime
 
