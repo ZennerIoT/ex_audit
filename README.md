@@ -9,6 +9,16 @@ to track changes to entities in your database.
 
 ## Setup
 
+Add ex_audit to your list of dependencies: **TBD release on hex.pm**
+
+```elixir
+def deps do
+  [
+    {:ex_audit, "~> 0.1.0"}
+  ]
+end
+```
+
 You have to hook ExAudit to your repo, by replacing `Ecto.Repo` with `ExAudit.Repo`:
 
 ```elixir
@@ -17,9 +27,27 @@ defmodule MyApp.Repo
 end
 ```
 
-Create a schema module and migration for the versions table. This table will automatically be ignored:
+### Configuration
+
+You have to tell ExAudit which schemas to track.
+
+In your config.exs, write something like this:
+
+```elixir
+config :ex_audit, 
+  tracked_schemas: [
+    MyApp.User,
+    MyApp.BlogPost,
+    MyApp.BlogPost.Section,
+    MyApp.Comment
+  ]
+```
+
+Both real tables and embedded schemas should go here.
 
 ### Schema
+
+Create a schema module for the versions table.
 
 ```elixir
 defmodule MyApp.Version
@@ -27,10 +55,19 @@ defmodule MyApp.Version
   import Ecto.Changeset
 
   schema "versions" do
+    # The patch in Erlang External Term Format
     field :patch, ExAudit.Type.Patch
+
+    # supports UUID and other types as well
     field :entity_id, :integer
+
+    # name of the table the entity is in
     field :entity_schema, :string
+
+    # type of the action that has happened to the entity (created, updated, deleted)
     field :action, ExAudit.Type.Action
+
+    # when has this happened
     field :recorded_at, :utc_datetime
 
     # custom fields
@@ -46,6 +83,8 @@ end
 ```
 
 ### Migration
+
+Create a migration module for the versions table.
 
 ```elixir
 defmodule MyApp.Migrations.AddVersions do
@@ -78,6 +117,8 @@ end
 
 ### Recording custom data
 
+**TBD: not implemented yet**
+
 If you want to track custom data such as the user id, you can simply pass a keyword list with that data
 to the `:ex_audit_custom` option in any Repo function:
 
@@ -108,16 +149,6 @@ in the plug tree.
 In some cases where it is not possible to call the Repo function from the conn process, you have to pass the 
 custom data manually via the options described above.
 
-## Installation
-
-ExAudit can be installed by adding `ex_audit` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:ex_audit, "~> 0.1.0"}
-  ]
-end
-```
+## More
 
 The documentation is at [https://hexdocs.pm/ex_audit](https://hexdocs.pm/ex_audit).
