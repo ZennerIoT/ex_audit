@@ -22,7 +22,7 @@ end
 You have to hook ExAudit to your repo, by replacing `Ecto.Repo` with `ExAudit.Repo`:
 
 ```elixir
-defmodule MyApp.Repo
+defmodule MyApp.Repo do
   use ExAudit.Repo, otp_app: :my_app
 end
 ```
@@ -54,7 +54,7 @@ to the table or decide which type to use for the primary key.
 #### `version.ex`
 
 ```elixir
-defmodule MyApp.Version
+defmodule MyApp.Version do
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -87,7 +87,7 @@ end
 ```
 
 #### `create_version_table.exs`
-]
+
 ```elixir
 defmodule MyApp.Migrations.AddVersions do
   use Ecto.Migration
