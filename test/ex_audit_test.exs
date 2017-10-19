@@ -21,6 +21,7 @@ defmodule ExAuditTest do
 
     version = Repo.one(from v in Version, 
       where: v.entity_id == ^user.id,
+      where: v.entity_schema == ^User,
       where: v.action == ^:created)
 
     assert version.action == :created
@@ -35,6 +36,7 @@ defmodule ExAuditTest do
     {:ok, user} = Repo.update(changeset)
     version = Repo.one(from v in Version, 
       where: v.entity_id == ^user.id,
+      where: v.entity_schema == ^User,
       where: v.action == ^:updated)
 
     assert version.patch.email == {:changed, {:primitive_change, changeset.data.email, params.email}}
@@ -42,6 +44,7 @@ defmodule ExAuditTest do
     {:ok, user} = Repo.delete(user) 
     version = Repo.one(from v in Version,
       where: v.entity_id == ^user.id,
+      where: v.entity_schema == ^User,
       where: v.action == ^:deleted)
 
     assert not is_nil(version)
