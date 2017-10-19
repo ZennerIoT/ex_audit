@@ -45,9 +45,12 @@ config :ex_audit,
 
 Both real tables and embedded schemas should go here.
 
-### Schema
+### Version Schema and Migration
 
-Create a schema module for the versions table.
+You need to copy the migration and the schema module for the versions table. This allows you to add custom fields
+to the table or decide which type to use for the primary key.
+
+#### `version.ex`
 
 ```elixir
 defmodule MyApp.Version
@@ -82,9 +85,7 @@ defmodule MyApp.Version
 end
 ```
 
-### Migration
-
-Create a migration module for the versions table.
+#### `create_version_table.exs`
 
 ```elixir
 defmodule MyApp.Migrations.AddVersions do
