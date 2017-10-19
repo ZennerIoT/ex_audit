@@ -29,12 +29,13 @@ end
 
 ### Configuration
 
-You have to tell ExAudit which schemas to track.
+You have to tell ExAudit which schemas to track and the module of your version schema.
 
 In your config.exs, write something like this:
 
 ```elixir
 config :ex_audit, 
+  version_schema: MyApp.Version, 
   tracked_schemas: [
     MyApp.User,
     MyApp.BlogPost,
@@ -86,7 +87,7 @@ end
 ```
 
 #### `create_version_table.exs`
-
+]
 ```elixir
 defmodule MyApp.Migrations.AddVersions do
   use Ecto.Migration

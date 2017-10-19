@@ -45,5 +45,9 @@ defmodule ExAuditTest do
       where: v.action == ^:deleted)
 
     assert not is_nil(version)
+
+    versions = Repo.history(user)
+
+    assert length(versions) == 3
   end
 end

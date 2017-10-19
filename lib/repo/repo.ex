@@ -144,10 +144,8 @@ defmodule ExAudit.Repo do
         ExAudit.Schema.delete!(__MODULE__, @adapter, struct, opts)
       end
 
-      def history(queryable, id, opts \\ []) do
-        # TODO update opts with the schema of the version table
-
-        ExAudit.Queryable.history(__MODULE__, @adapter, queryable, id, opts)
+      def history(queryable, opts \\ []) do
+        ExAudit.Queryable.history(__MODULE__, @adapter, queryable, opts)
       end
 
       def preload(struct_or_structs_or_nil, preloads, opts \\ []) do
