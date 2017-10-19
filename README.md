@@ -66,7 +66,7 @@ defmodule MyApp.Version do
     field :entity_id, :integer
 
     # name of the table the entity is in
-    field :entity_schema, :string
+    field :entity_schema, ExAudit.Type.Schema
 
     # type of the action that has happened to the entity (created, updated, deleted)
     field :action, ExAudit.Type.Action

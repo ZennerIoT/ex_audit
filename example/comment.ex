@@ -2,7 +2,7 @@ defmodule ExAudit.Test.Comment do
   use Ecto.Schema
   import Ecto.Changeset
 
-  schema "blog_post" do
+  schema "comments" do
     belongs_to :author, ExAudit.Test.User
     field :body, :string
 
