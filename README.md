@@ -75,7 +75,7 @@ defmodule MyApp.Version do
     field :recorded_at, :utc_datetime
 
     # custom fields
-    has_one :actor, MyApp.User
+    belongs_to :actor, MyApp.User
   end
 
   def changeset(struct, params \\ %{}) do
@@ -119,8 +119,6 @@ end
 
 ### Recording custom data
 
-**TBD: not implemented yet**
-
 If you want to track custom data such as the user id, you can simply pass a keyword list with that data
 to the `:ex_audit_custom` option in any Repo function:
 
@@ -151,6 +149,14 @@ in the plug tree.
 In some cases where it is not possible to call the Repo function from the conn process, you have to pass the 
 custom data manually via the options described above.
 
+Examples for data you might want to track additionally:
+
+ * User ID
+ * API Key ID 
+ * Message from the user describing what she changed
+
 ## More
 
-The documentation is at [https://hexdocs.pm/ex_audit](https://hexdocs.pm/ex_audit).
+The documentation is available at [https://hexdocs.pm/ex_audit](https://hexdocs.pm/ex_audit). **TBD: release documentation on hexdocs.pm**
+
+Check out [ZENNER IoT Solutions](https://zenner-iot.com/), makers of the [ELEMENT IoT platform](https://zenner-iot.com/iot-plattform).

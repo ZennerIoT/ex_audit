@@ -1,4 +1,18 @@
 defmodule ExAudit do
+  use Application
+
+  @tracked_data_table :tracked_data_table
+
+  def start(_, _) do
+    import Supervisor.Spec
+
+    children = [
+      worker(ExAudit.CustomData, [])
+    ]
+
+    opts = opts = [strategy: :one_for_one, name: ExAudit.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
   @moduledoc """
   # Configuration
 
@@ -15,6 +29,6 @@ defmodule ExAudit do
   end
 
   def track_pid(pid, data) do
-    # TODO
+    ExAudit.CustomData.track(pid, data)
   end
 end

@@ -48,7 +48,13 @@ defmodule ExAudit.Tracking do
     changes = find_changes(action, changeset, resulting_struct)
 
     now = DateTime.utc_now
-    custom_fields = Keyword.get(opts, :ex_audit_custom, []) |> Enum.into(%{})
+    custom_fields_opts = 
+      Keyword.get(opts, :ex_audit_custom, [])
+      |> Enum.into(%{})
+    custom_fields_process = 
+      ExAudit.CustomData.get()
+      |> Enum.into(%{})
+    custom_fields = Map.merge(custom_fields_process, custom_fields_opts)
 
     changes = Enum.map(changes, fn change ->
       change = Map.put(change, :recorded_at, now)

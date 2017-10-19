@@ -10,7 +10,7 @@ defmodule ExAudit.Test.Version do
     field :recorded_at, :utc_datetime
 
     # custom fields
-    has_one :actor, Test.User
+    belongs_to :actor, ExAudit.Test.User
   end
 
   def changeset(struct, params \\ %{}) do
