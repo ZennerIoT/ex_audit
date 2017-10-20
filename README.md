@@ -11,6 +11,8 @@ to track changes to entities in your database.
  * Creates +- diffs of the casted structs. Custom types are automatically supported.
  * Ships with functions to review the history of a struct and roll back changes
  * Allows custom ID types and custom fields in the version schema
+ * Tracks associated entities when they're created, updated or deleted in a single Repo call
+ * Recursively tracks cascading deletions
 
 ## Usage
 
