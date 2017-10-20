@@ -114,7 +114,7 @@ defmodule MyApp.Version do
 
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:patch, :entity_id, :entity_schema, :action, :recorded_at])
+    |> cast(params, [:patch, :entity_id, :entity_schema, :action, :recorded_at, :rollback])
     |> cast(params, [:actor_id]) # custom fields
   end
 end
@@ -148,7 +148,7 @@ defmodule MyApp.Migrations.AddVersions do
 
       # optional fields that you can define yourself
       # for example, it's a good idea to track who did the change
-      add :actor_id, references(:users, on_update: :update_all, :on_delete: :nilify_all)
+      add :actor_id, references(:users, on_update: :update_all, on_delete: :nilify_all)
     end
   end
 end
