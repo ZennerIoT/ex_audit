@@ -114,7 +114,10 @@ defmodule ExAudit.Schema do
     opts
     |> Keyword.put_new(:ex_audit_custom, [])
     |> Keyword.update(:ex_audit_custom, [], fn custom_fields ->
-      ExAudit.CustomData.get() ++ custom_fields
+      case Process.whereis(ExAudit.CustomData) do
+        nil -> []
+        _ -> ExAudit.CustomData.get()
+      end ++ custom_fields
     end)
   end
 end

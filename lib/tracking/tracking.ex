@@ -1,5 +1,6 @@
 defmodule ExAudit.Tracking do
   @version_schema Application.get_env(:ex_audit, :version_schema)
+  @tracked_schemas Application.get_env(:ex_audit, :tracked_schemas)
   @ignored_fields [:__meta__, :__struct__]
 
   import Ecto.Query
@@ -24,20 +25,25 @@ defmodule ExAudit.Tracking do
   def compare_versions(action, old, new) do
     schema = Map.get(old, :__struct__, Map.get(new, :__struct__))
 
-    assocs = schema.__schema__(:associations)
+    case schema do
+      schema when schema in @tracked_schemas ->
+        assocs = schema.__schema__(:associations)
 
-    ignored_fields = @ignored_fields ++ assocs
+        ignored_fields = @ignored_fields ++ assocs
 
-    patch = ExAudit.Diff.diff(Map.drop(old, ignored_fields), Map.drop(new, ignored_fields))
+        patch = ExAudit.Diff.diff(Map.drop(old, ignored_fields), Map.drop(new, ignored_fields))
 
-    params = %{
-      entity_id: Map.get(old, :id) || Map.get(new, :id),
-      entity_schema: schema,
-      patch: patch,
-      action: action
-    }
+        params = %{
+          entity_id: Map.get(old, :id) || Map.get(new, :id),
+          entity_schema: schema,
+          patch: patch,
+          action: action
+        }
 
-    [params]
+        [params]
+      _ -> 
+        []
+    end
   end
 
   def track_change(module, adapter, action, changeset, resulting_struct, opts) do
@@ -81,7 +87,7 @@ defmodule ExAudit.Tracking do
       |> Enum.filter(fn {_, opts} -> Map.get(opts, :on_delete) == :delete_all end)
  
     assocs
-    |> Enum.flat_map(fn {field, opts} -> 
+    |> Enum.flat_map(fn {_field, opts} -> 
       assoc_schema = Map.get(opts, :related)
 
       filter = [{Map.get(opts, :related_key), id}]
