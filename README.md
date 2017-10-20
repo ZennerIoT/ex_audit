@@ -43,7 +43,7 @@ tracking.
 
 ## Setup
 
-Add ex_audit to your list of dependencies: **TBD release on hex.pm**
+Add ex_audit to your list of dependencies:
 
 ```elixir
 def deps do
@@ -194,6 +194,6 @@ Examples for data you might want to track additionally:
 
 ## More
 
-The documentation is available at [https://hexdocs.pm/ex_audit](https://hexdocs.pm/ex_audit). **TBD: release documentation on hexdocs.pm**
+The documentation is available at [https://hexdocs.pm/ex_audit](https://hexdocs.pm/ex_audit).
 
 Check out [ZENNER IoT Solutions](https://zenner-iot.com/), makers of the [ELEMENT IoT platform](https://zenner-iot.com/iot-plattform).

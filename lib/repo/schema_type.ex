@@ -1,7 +1,7 @@
 defmodule ExAudit.Type.Schema do
   @behaviour Ecto.Type
 
-  @schemas Application.get_env(:ex_audit, :tracked_schemas)
+  @schemas Application.get_env(:ex_audit, :tracked_schemas, [])
 
   for schema <- @schemas do
     def cast(unquote(schema)), do: {:ok, unquote(schema)}
