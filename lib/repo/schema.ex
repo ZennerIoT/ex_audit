@@ -94,9 +94,7 @@ defmodule ExAudit.Schema do
     end)
   end
 
-  @doc """
-  Cleans up the return value from repo.transaction
-  """
+  # Cleans up the return value from repo.transaction
   defp augment_transaction(repo, fun) do
     case repo.transaction(fun) do
       {:ok, value} -> value
@@ -104,12 +102,12 @@ defmodule ExAudit.Schema do
     end
   end
 
-  @doc """
-  Gets the custom data from the ets store that stores it by PID, and adds 
-  it to the list of custom data from the options list
-
-  This is done so it works inside a transaction (which happens when ecto mutates assocs at the same time)
-  """
+  
+  # Gets the custom data from the ets store that stores it by PID, and adds 
+  # it to the list of custom data from the options list
+  # 
+  # This is done so it works inside a transaction (which happens when ecto mutates assocs at the same time)
+  
   defp augment_opts(opts) do
     opts
     |> Keyword.put_new(:ex_audit_custom, [])

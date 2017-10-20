@@ -52,6 +52,9 @@ defmodule ExAudit.Test.Repo.Migrations.InitialTables do
       # when has this happened
       add :recorded_at, :utc_datetime
 
+      # was this change part of a rollback?
+      add :rollback, :boolean, default: false
+
       # optional fields that you can define yourself
       # for example, it's a good idea to track who did the change
       add :actor_id, references(:users, on_update: :update_all, on_delete: :nilify_all)

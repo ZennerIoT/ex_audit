@@ -7,6 +7,40 @@ to track changes to entities in your database.
 
 **Please note that this project is still under development and not all of the features are done until this notice disappears**
 
+## Features
+ 
+ * Wraps Ecto.Repo, no need to change your existing codebase to start tracking changes
+ * Creates +- diffs of the casted structs. Custom types are automatically supported.
+ * Ships with functions to review the history of a struct and roll back changes
+ * Allows custom ID types and custom fields in the version schema
+
+## Usage
+
+ExAudit replaces some functions in your repo module:
+
+ * `insert/2`
+ * `insert!/2`
+ * `update/2`
+ * `update!/2`
+ * `delete/2`
+ * `delete!/2`
+
+All changes to the database made with these functions will automatically be tracked.
+
+Also, new functions are added to the repository:
+
+ * `history/2`: lists all versions of the given struct ordered from oldest to newest
+ * `revert/2`: rolls the referenced entity back to the state it was before the given version
+   was changed
+
+With this API, you should be able to enable auditing across your entire application easily.
+
+If for some reason ExAudit does not track a change, you can manually add it with 
+`ExAudit.Tracking.track_change(module, adapter, action, changeset, resulting_struct, opts)`.
+
+In the same module, there are a few other functions you might find useful to roll custom
+tracking.
+
 ## Setup
 
 Add ex_audit to your list of dependencies: **TBD release on hex.pm**
@@ -39,12 +73,9 @@ config :ex_audit,
   tracked_schemas: [
     MyApp.User,
     MyApp.BlogPost,
-    MyApp.BlogPost.Section,
     MyApp.Comment
   ]
 ```
-
-Both real tables and embedded schemas should go here.
 
 ### Version Schema and Migration
 
@@ -73,6 +104,9 @@ defmodule MyApp.Version do
 
     # when has this happened
     field :recorded_at, :utc_datetime
+
+    # was this change part of a rollback?
+    field :rollback, :boolean, default: false
 
     # custom fields
     belongs_to :actor, MyApp.User
@@ -108,6 +142,9 @@ defmodule MyApp.Migrations.AddVersions do
 
       # when has this happened
       add :recorded_at, :utc_datetime
+
+      # was this change part of a rollback?
+      add :rollback, :boolean, default: false
 
       # optional fields that you can define yourself
       # for example, it's a good idea to track who did the change

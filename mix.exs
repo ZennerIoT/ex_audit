@@ -8,7 +8,9 @@ defmodule ExAudit.Mixfile do
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
       deps: deps(),
-      elixirc_paths: paths(Mix.env)
+      elixirc_paths: paths(Mix.env),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [coveralls: :test]
     ]
   end
 
@@ -34,8 +36,9 @@ defmodule ExAudit.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ecto, "~> 2.2"},
-      {:postgrex, "~> 0.13.3"}
+      {:ecto, "~> 2.2", only: :test},
+      {:postgrex, "~> 0.13.3", only: :test},
+      {:excoveralls, "~> 0.7", only: :test}
     ]
   end
 end

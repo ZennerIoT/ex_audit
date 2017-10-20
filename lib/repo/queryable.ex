@@ -1,6 +1,8 @@
 defmodule ExAudit.Queryable do
   @version_schema Application.get_env(:ex_audit, :version_schema)
 
+  require Logger
+
   def update_all(module, adapter, queryable, updates, opts) do
     Ecto.Repo.Queryable.update_all(module, adapter, queryable, updates, opts)
   end
@@ -30,4 +32,74 @@ defmodule ExAudit.Queryable do
 
     Ecto.Repo.Queryable.all(module, adapter, query, opts)
   end
+
+  @drop_fields [:__meta__, :__struct__]
+
+  def revert(module, _adapter, version, opts) do
+    import Ecto.Query
+
+    # get the history of the entity after this version
+
+    query = from v in @version_schema, 
+      where: v.entity_id == ^version.entity_id,
+      where: v.entity_schema == ^version.entity_schema,
+      where: v.recorded_at >= ^version.recorded_at,
+      order_by: [desc: v.recorded_at]
+
+    versions = module.all(query)
+
+    # get the referenced struct as it exists now
+
+    struct = module.one(from s in version.entity_schema, where: s.id == ^version.entity_id)
+
+    result = Enum.reduce(versions, struct, &_revert/2)
+
+    result = if result |> Map.keys() |> length() == 0 do
+      nil
+    else
+      result
+    end
+
+    schema = version.entity_schema
+
+    {action, changeset} = case {struct, result} do
+      {nil, %{}} -> {:insert, schema.changeset(struct(schema, %{}), Map.drop(result, @drop_fields))}
+      {%{}, nil} -> {:delete, struct}
+      {nil, nil} -> {nil, nil}
+      _ -> {:update, schema.changeset(struct, Map.drop(result, @drop_fields))}
+    end
+
+    opts = Keyword.update(opts, :ex_audit_custom, [rollback: true], fn custom -> [{:rollback, true} | custom] end)
+
+    if action do
+      res = apply(module, action, [changeset, opts])
+      case action do
+        :delete -> {:ok, nil}
+        _ -> res
+      end
+    else
+      Logger.warn(["Can't revert ", inspect(version), " because the entity would still be deleted"])
+      {:ok, nil}
+    end
+  end
+
+  defp _revert(version, struct) do
+    apply_change(reverse_action(version.action), ExAudit.Diff.reverse(version.patch), struct)
+  end
+
+  defp apply_change(:updated, patch, to) do
+    ExAudit.Patch.patch(to, patch)
+  end
+
+  defp apply_change(:deleted, _patch, _to) do
+    %{}
+  end
+
+  defp apply_change(:created, patch, _to) do
+    ExAudit.Patch.patch(%{}, patch)
+  end
+
+  defp reverse_action(:updated), do: :updated
+  defp reverse_action(:created), do: :deleted
+  defp reverse_action(:deleted), do: :created
 end

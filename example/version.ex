@@ -8,6 +8,7 @@ defmodule ExAudit.Test.Version do
     field :entity_schema, ExAudit.Type.Schema
     field :action, ExAudit.Type.Action
     field :recorded_at, :utc_datetime
+    field :rollback, :boolean, default: false
 
     # custom fields
     belongs_to :actor, ExAudit.Test.User
@@ -15,7 +16,7 @@ defmodule ExAudit.Test.Version do
 
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:patch, :entity_id, :entity_schema, :action, :recorded_at])
+    |> cast(params, [:patch, :entity_id, :entity_schema, :action, :recorded_at, :rollback])
     |> cast(params, [:actor_id]) # custom fields
   end
 end

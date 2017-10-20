@@ -3,7 +3,7 @@ defmodule AssocTest do
 
   import Ecto.Query
 
-  alias ExAudit.Test.{Repo, User, Version, BlogPost, Comment, Util}
+  alias ExAudit.Test.{Repo, Version, BlogPost, Comment, Util}
 
   test "comment lifecycle tracked" do
     user = Util.create_user()
@@ -22,7 +22,7 @@ defmodule AssocTest do
     }
 
     changeset = BlogPost.changeset(%BlogPost{}, params)
-    {:ok, %{comments: [comment]} = blog_post} = Repo.insert(changeset)
+    {:ok, %{comments: [comment]}} = Repo.insert(changeset)
 
     [%{actor_id: actor_id}] = comment_history = Repo.history(comment)
     assert length(comment_history) == 1

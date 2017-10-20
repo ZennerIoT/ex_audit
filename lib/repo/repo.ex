@@ -2,6 +2,9 @@ defmodule ExAudit.Repo do
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
       @behaviour Ecto.Repo
+      @behaviour ExAudit.Repo
+
+      # copied ecto.repo functions here and replaced what they call with our functions
 
       {otp_app, adapter, config} = Ecto.Repo.Supervisor.compile_config(__MODULE__, opts)
       @otp_app otp_app
@@ -144,10 +147,6 @@ defmodule ExAudit.Repo do
         ExAudit.Schema.delete!(__MODULE__, @adapter, struct, opts)
       end
 
-      def history(queryable, opts \\ []) do
-        ExAudit.Queryable.history(__MODULE__, @adapter, queryable, opts)
-      end
-
       def preload(struct_or_structs_or_nil, preloads, opts \\ []) do
         Ecto.Repo.Preloader.preload(struct_or_structs_or_nil, __MODULE__, preloads, opts)
       end
@@ -156,8 +155,30 @@ defmodule ExAudit.Repo do
         Ecto.Repo.Schema.load(@adapter, schema_or_types, data)
       end
 
-
       defoverridable [child_spec: 1]
+
+      # additional functions
+
+      def history(queryable, opts \\ []) do
+        ExAudit.Queryable.history(__MODULE__, @adapter, queryable, opts)
+      end
+
+      def revert(version, opts \\ []) do
+        ExAudit.Queryable.revert(__MODULE__, @adapter, version, opts)
+      end
     end
   end
+
+  @doc """
+  Gathers the version history for a single entity, ordered by the time the changes
+  happened from oldest to newest.
+  """
+  @callback history(struct, opts :: list) :: [version :: struct]
+
+  @doc """
+  Undoes the changes made in the given version, as well as all of the following versions.
+
+  Inserts a new version entry in the process, with the `:rollback` flag set to true
+  """
+  @callback revert(version :: struct, opts :: list) :: {:ok, struct}
 end
