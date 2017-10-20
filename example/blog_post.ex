@@ -8,7 +8,7 @@ defmodule ExAudit.Test.BlogPost do
     belongs_to :author, ExAudit.Test.User
     embeds_many :sections, ExAudit.Test.BlogPost.Section
 
-    has_many :comments, ExAudit.Test.Comment
+    has_many :comments, ExAudit.Test.Comment, on_delete: :delete_all
 
     timestamps(type: :utc_datetime)
   end

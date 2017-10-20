@@ -46,6 +46,7 @@ defmodule ExAudit.Schema do
   def delete(module, adapter, struct, opts) do
     opts = augment_opts(opts)
     augment_transaction(module, fn ->
+      ExAudit.Tracking.track_assoc_deletion(module, adapter, struct, opts)
       result = Ecto.Repo.Schema.delete(module, adapter, struct, opts)
 
       case result do
@@ -86,23 +87,29 @@ defmodule ExAudit.Schema do
   def delete!(module, adapter, struct, opts) do
     opts = augment_opts(opts)
     augment_transaction(module, fn ->
+      ExAudit.Tracking.track_assoc_deletion(module, adapter, struct, opts)
       result = Ecto.Repo.Schema.delete!(module, adapter, struct, opts)
       ExAudit.Tracking.track_change(module, adapter, :deleted, struct, result, opts)
       result
     end)
   end
 
+  @doc """
+  Cleans up the return value from repo.transaction
+  """
   defp augment_transaction(repo, fun) do
-    case repo.in_transaction?() do
-      true -> fun.()
-      false ->
-        case repo.transaction(fun) do
-          {:ok, value} -> value
-          other -> other
-        end
+    case repo.transaction(fun) do
+      {:ok, value} -> value
+      other -> other
     end
   end
 
+  @doc """
+  Gets the custom data from the ets store that stores it by PID, and adds 
+  it to the list of custom data from the options list
+
+  This is done so it works inside a transaction (which happens when ecto mutates assocs at the same time)
+  """
   defp augment_opts(opts) do
     opts
     |> Keyword.put_new(:ex_audit_custom, [])
