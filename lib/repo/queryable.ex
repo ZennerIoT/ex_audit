@@ -11,7 +11,7 @@ defmodule ExAudit.Queryable do
     Ecto.Repo.Queryable.delete_all(module, adapter, queryable, opts)
   end
 
-  def history(module, adapter, queryable, opts) do
+  def history(module, adapter, struct, opts) do
     import Ecto.Query
 
     query = from v in @version_schema, 
@@ -19,10 +19,10 @@ defmodule ExAudit.Queryable do
 
     # TODO what do when we get a query
 
-    query = case queryable do
+    query = case struct do
       # %Ecto.Query{from: struct} -> 
       #   from v in query, 
-      #     where: v.entity_id == subquery(from q in queryable, select: q.id),
+      #     where: v.entity_id == subquery(from q in struct, select: q.id),
       #     where: v.entity_schema == ^struct
       %{__struct__: struct, id: id} when nil not in [struct, id] ->
         from v in query, 
@@ -30,7 +30,21 @@ defmodule ExAudit.Queryable do
           where: v.entity_schema == ^struct
     end
 
-    Ecto.Repo.Queryable.all(module, adapter, query, opts)
+    versions = Ecto.Repo.Queryable.all(module, adapter, query, opts)
+
+    if Keyword.get(opts, :render_struct, false) do
+      versions
+      |> Enum.reverse()
+      |> Enum.map_reduce(struct, fn version, new_struct -> 
+        old_struct = _revert(version, new_struct)
+        version = Map.put(version, :original, empty_map_to_nil(old_struct))
+        {version, old_struct}
+      end)
+      |> elem(0)
+      |> Enum.reverse()
+    else  
+      versions
+    end
   end
 
   @drop_fields [:__meta__, :__struct__]
@@ -54,11 +68,7 @@ defmodule ExAudit.Queryable do
 
     result = Enum.reduce(versions, struct, &_revert/2)
 
-    result = if result |> Map.keys() |> length() == 0 do
-      nil
-    else
-      result
-    end
+    result = empty_map_to_nil(result)
 
     schema = version.entity_schema
 
@@ -80,6 +90,14 @@ defmodule ExAudit.Queryable do
     else
       Logger.warn(["Can't revert ", inspect(version), " because the entity would still be deleted"])
       {:ok, nil}
+    end
+  end
+
+  defp empty_map_to_nil(map) do
+    if map |> Map.keys() |> length() == 0 do
+      nil
+    else
+      map
     end
   end
 

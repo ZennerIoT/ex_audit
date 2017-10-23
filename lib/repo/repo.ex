@@ -159,8 +159,8 @@ defmodule ExAudit.Repo do
 
       # additional functions
 
-      def history(queryable, opts \\ []) do
-        ExAudit.Queryable.history(__MODULE__, @adapter, queryable, opts)
+      def history(struct, opts \\ []) do
+        ExAudit.Queryable.history(__MODULE__, @adapter, struct, opts)
       end
 
       def revert(version, opts \\ []) do
@@ -170,8 +170,13 @@ defmodule ExAudit.Repo do
   end
 
   @doc """
-  Gathers the version history for a single entity, ordered by the time the changes
+  Gathers the version history for the given struct, ordered by the time the changes
   happened from oldest to newest.
+
+  # Options
+
+   * `:render_structs` adds a field `:original` to the returned versions that contains the original 
+     struct. (default `false`)
   """
   @callback history(struct, opts :: list) :: [version :: struct]
 
@@ -180,5 +185,5 @@ defmodule ExAudit.Repo do
 
   Inserts a new version entry in the process, with the `:rollback` flag set to true
   """
-  @callback revert(version :: struct, opts :: list) :: {:ok, struct}
+  @callback revert(version :: struct, opts :: list) :: {:ok, struct} | {:error, changeset :: Ecto.Changeset.t}
 end
