@@ -171,12 +171,16 @@ defmodule ExAudit.Repo do
 
   @doc """
   Gathers the version history for the given struct, ordered by the time the changes
-  happened from oldest to newest.
+  happened from newest to oldest.
 
   # Options
 
-   * `:render_structs` adds a field `:original` to the returned versions that contains the original 
-     struct. (default `false`)
+   * `:render_structs` if true, renders the _resulting_ struct of the patch for every version in its history.
+     This will shift the ids of the versions one down, so visualisations are correct and corresponding "Revert"
+     buttons revert the struct back to the visualized state.
+     Will append an additional version that contains the oldest ID and the oldest struct known. In most cases, the 
+     `original` will be `nil` which means if this version would be reverted, the struct would be deleted. 
+     `false` by default.
   """
   @callback history(struct, opts :: list) :: [version :: struct]
 

@@ -15,7 +15,7 @@ defmodule ExAudit.Queryable do
     import Ecto.Query
 
     query = from v in @version_schema, 
-      order_by: v.recorded_at
+      order_by: [desc: :recorded_at]
 
     # TODO what do when we get a query
 
@@ -33,15 +33,25 @@ defmodule ExAudit.Queryable do
     versions = Ecto.Repo.Queryable.all(module, adapter, query, opts)
 
     if Keyword.get(opts, :render_struct, false) do
-      versions
-      |> Enum.reverse()
-      |> Enum.map_reduce(struct, fn version, new_struct -> 
-        old_struct = _revert(version, new_struct)
-        version = Map.put(version, :original, empty_map_to_nil(old_struct))
-        {version, old_struct}
-      end)
-      |> elem(0)
-      |> Enum.reverse()
+      {versions, oldest_struct} = 
+        versions
+        |> Enum.map_reduce(struct, fn version, new_struct -> 
+          old_struct = _revert(version, new_struct)
+          version = 
+            version
+            |> Map.put(:original, empty_map_to_nil(new_struct))
+            |> Map.put(:first, false)
+          {version, old_struct}
+        end)
+      {versions, oldest_id} =
+        versions
+        |> Enum.map_reduce(nil, fn version, id ->
+          {%{version | id: id}, version.id}
+        end)
+
+      versions ++ [struct(@version_schema, %{
+        id: oldest_id,
+      }) |> Map.put(:original, empty_map_to_nil(oldest_struct))]
     else  
       versions
     end
@@ -58,7 +68,7 @@ defmodule ExAudit.Queryable do
       where: v.entity_id == ^version.entity_id,
       where: v.entity_schema == ^version.entity_schema,
       where: v.recorded_at >= ^version.recorded_at,
-      order_by: [desc: v.recorded_at]
+      order_by: [desc: :recorded_at]
 
     versions = module.all(query)
 
