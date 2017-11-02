@@ -82,11 +82,19 @@ defmodule ExAudit.Queryable do
 
     schema = version.entity_schema
 
+    drop_from_params = @drop_fields ++ schema.__schema__(:associations)
+
     {action, changeset} = case {struct, result} do
-      {nil, %{}} -> {:insert, schema.changeset(struct(schema, %{}), Map.drop(result, @drop_fields))}
+      {nil, %{}} -> {:insert, schema.changeset(struct(schema, %{}), Map.drop(result, drop_from_params))}
       {%{}, nil} -> {:delete, struct}
       {nil, nil} -> {nil, nil}
-      _ -> {:update, schema.changeset(struct, Map.drop(result, @drop_fields))}
+      _ -> 
+        struct = case Keyword.get(opts, :preload) do
+          nil -> struct
+          [] -> struct
+          preloads when is_list(preloads) -> module.preload(struct, preloads)
+        end
+        {:update, schema.changeset(struct, Map.drop(result, drop_from_params))}
     end
 
     opts = Keyword.update(opts, :ex_audit_custom, [rollback: true], fn custom -> [{:rollback, true} | custom] end)

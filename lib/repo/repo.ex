@@ -188,6 +188,11 @@ defmodule ExAudit.Repo do
   Undoes the changes made in the given version, as well as all of the following versions.
 
   Inserts a new version entry in the process, with the `:rollback` flag set to true
+
+  # Options
+
+   * `:preload` if your changeset depends on assocs being preloaded on the struct before 
+     updating it, you can define a list of assocs to be preloaded with this option
   """
   @callback revert(version :: struct, opts :: list) :: {:ok, struct} | {:error, changeset :: Ecto.Changeset.t}
 end
