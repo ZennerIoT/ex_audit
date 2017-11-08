@@ -1,4 +1,22 @@
 defmodule ExAudit.Repo do
+  @moduledoc """
+  Replaces Ecto.Repo to be able to keep track of changes made to entities in the repo.
+  Changes made with the following functions are tracked, other function calls must be manually tracked:
+
+   * `insert`, `insert!`
+   * `update`, `update!`
+   * `delete`, `delete!`
+
+  # Shared options
+
+  All normal Ecto.Repo options will work the same, however, there are additional options specific to ex_audit:
+
+   * `:ex_audit_custom` - Keyword list of custom data that should be placed in new version entries. Entries in this
+     list overwrite the data from the ExAudit.track call
+   * `:ignore_audit` - If true, ex_audit will not track changes made to entities
+  
+  """
+
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
       @behaviour Ecto.Repo

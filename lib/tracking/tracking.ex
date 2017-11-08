@@ -30,25 +30,36 @@ defmodule ExAudit.Tracking do
 
       ignored_fields = @ignored_fields ++ assocs
 
-      patch = ExAudit.Diff.diff(Map.drop(old, ignored_fields), Map.drop(new, ignored_fields))
+      patch = ExAudit.Diff.diff(
+        Map.drop(old, ignored_fields), 
+        Map.drop(new, ignored_fields)
+      )
 
-      params = %{
-        entity_id: Map.get(old, :id) || Map.get(new, :id),
-        entity_schema: schema,
-        patch: patch,
-        action: action
-      }
+      case patch do
+        :not_changed -> []
+        patch -> 
+          params = %{
+            entity_id: Map.get(old, :id) || Map.get(new, :id),
+            entity_schema: schema,
+            patch: patch,
+            action: action
+          }
 
-      [params]
+          [params]
+      end
+
+
     else
       []
     end
   end
 
   def track_change(module, adapter, action, changeset, resulting_struct, opts) do
-    changes = find_changes(action, changeset, resulting_struct)
+    if not Keyword.get(opts, :ignore_audit, false) do
+      changes = find_changes(action, changeset, resulting_struct)
 
-    insert_versions(module, adapter, changes, opts)
+      insert_versions(module, adapter, changes, opts)
+    end
   end
 
   def insert_versions(module, adapter, changes, opts) do
@@ -70,15 +81,13 @@ defmodule ExAudit.Tracking do
   end
 
   def find_assoc_deletion(module, adapter, struct, repo_opts) do
-    schema = case struct do
-      %Ecto.Changeset{data: %{__struct__: schema}} -> schema
-      %{__struct__: schema} -> schema
+    struct = case struct do
+      %Ecto.Changeset{} -> Ecto.Changeset.apply_changes(struct)
+      _ -> struct
     end
 
-    id = case struct do
-      %Ecto.Changeset{data: %{id: id}} -> id
-      %{id: id} -> id
-    end
+    id = struct.id
+    schema = struct.__struct__
 
     assocs = 
       schema.__schema__(:associations) 
@@ -86,16 +95,8 @@ defmodule ExAudit.Tracking do
       |> Enum.filter(fn {_, opts} -> Map.get(opts, :on_delete) == :delete_all end)
  
     assocs
-    |> Enum.flat_map(fn {_field, opts} -> 
-      assoc_schema = Map.get(opts, :related)
-
-      filter = [{Map.get(opts, :related_key), id}]
-
-      query = 
-        from(s in assoc_schema)
-        |> where(^filter)
-
-      root = module.all(query)
+    |> Enum.flat_map(fn {field, _opts} -> 
+      root = module.all(Ecto.assoc(struct, field))
       root ++ Enum.map(root, &find_assoc_deletion(module, adapter, &1, repo_opts))
     end)
     |> List.flatten()
