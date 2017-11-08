@@ -48,7 +48,7 @@ Add ex_audit to your list of dependencies:
 ```elixir
 def deps do
   [
-    {:ex_audit, "~> 0.2.0"}
+    {:ex_audit, "~> 0.3.0"}
   ]
 end
 ```
@@ -191,6 +191,11 @@ Examples for data you might want to track additionally:
  * User ID
  * API Key ID 
  * Message from the user describing what she changed
+
+## Known issues
+
+ - Due to usage of Repo.transaction internally, error changesets that are generated when the DB hits a constraint error are not
+   returned correctly. I'm looking into options so those changesets will be returned correctly.
 
 ## More
 
