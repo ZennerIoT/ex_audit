@@ -3,7 +3,7 @@ defmodule AssocTest do
 
   import Ecto.Query
 
-  alias ExAudit.Test.{Repo, Version, BlogPost, Comment, Util}
+  alias ExAudit.Test.{Repo, Version, BlogPost, Comment, Util, UserGroup}
 
   test "comment lifecycle tracked" do
     user = Util.create_user()
@@ -63,5 +63,22 @@ defmodule AssocTest do
       where: v.entity_schema == ^Comment)
 
     assert length(versions) == 6 # 3 created, 3 deleted
+  end
+
+  test "should return changesets from constraint errors" do
+    user = Util.create_user()
+
+    ch = UserGroup.changeset(%UserGroup{}, %{name: "a group", user_id: user.id})
+    {:ok, group} = Repo.insert(ch)
+
+    import Ecto.Changeset
+
+    deletion = 
+      user 
+      |> change
+      |> no_assoc_constraint(:groups)
+
+    assert {:error, %Ecto.Changeset{}} = Repo.delete(deletion)
+
   end
 end

@@ -6,6 +6,8 @@ defmodule ExAudit.Test.User do
     field :email, :string
     field :name, :string
 
+    has_many :groups, ExAudit.Test.UserGroup
+
     timestamps()
   end
 

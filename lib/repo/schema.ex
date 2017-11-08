@@ -66,7 +66,7 @@ defmodule ExAudit.Schema do
       result = Ecto.Repo.Schema.insert!(module, adapter, struct, opts)
       ExAudit.Tracking.track_change(module, adapter, :created, struct, result, opts)
       result
-    end)
+    end, true)
   end
 
   def update!(module, adapter, struct, opts) do
@@ -75,7 +75,7 @@ defmodule ExAudit.Schema do
       result = Ecto.Repo.Schema.update!(module, adapter, struct, opts)
       ExAudit.Tracking.track_change(module, adapter, :updated, struct, result, opts)
       result
-    end)
+    end, true)
   end
 
   def insert_or_update!(module, adapter, changeset, opts) do
@@ -91,14 +91,28 @@ defmodule ExAudit.Schema do
       result = Ecto.Repo.Schema.delete!(module, adapter, struct, opts)
       ExAudit.Tracking.track_change(module, adapter, :deleted, struct, result, opts)
       result
-    end)
+    end, true)
   end
 
   # Cleans up the return value from repo.transaction
-  defp augment_transaction(repo, fun) do
-    case repo.transaction(fun) do
-      {:ok, value} -> value
-      other -> other
+  defp augment_transaction(repo, fun, bang \\ false) do
+    multi = 
+      Ecto.Multi.new()
+      |> Ecto.Multi.run(:main, __MODULE__, :run_in_multi, [fun, bang])
+
+    case {repo.transaction(multi), bang} do
+      {{:ok, %{main: value}}, false} -> {:ok, value}
+      {{:ok, %{main: value}}, true} -> value
+      {{:error, :main, error, _}, false} -> {:error, error}
+      {{:error, :main, error, _}, true} -> raise error
+    end
+  end
+
+  def run_in_multi(multi, fun, bang) do
+    case {fun.(), bang} do
+      {{:ok, _} = ok, false} -> ok
+      {{:error, _} = error, false} -> error
+      {value, true} -> {:ok, value}
     end
   end
 
