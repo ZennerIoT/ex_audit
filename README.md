@@ -48,7 +48,7 @@ Add ex_audit to your list of dependencies:
 ```elixir
 def deps do
   [
-    {:ex_audit, "~> 0.3.0"}
+    {:ex_audit, "~> 0.3.1"}
   ]
 end
 ```
