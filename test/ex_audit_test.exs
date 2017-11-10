@@ -4,7 +4,7 @@ defmodule ExAuditTest do
 
   import Ecto.Query
 
-  alias ExAudit.Test.{Repo, User, Version, BlogPost}
+  alias ExAudit.Test.{Repo, User, Version, BlogPost, Util}
 
   test "should document lifecycle of an entity" do
     params = %{
@@ -90,5 +90,23 @@ defmodule ExAuditTest do
         where: v.action == ^:created)
 
     assert version.actor_id == user.id
+  end
+
+  test "does not track changes to ignored fields" do
+    user = Util.create_user()
+
+    changeset = User.changeset(user, %{transient_field: 3})
+
+    assert {:ok, user} = Repo.update(changeset)
+
+    changeset = User.changeset(user, %{name: "moritz"})
+
+    assert {:ok, user} = Repo.update(changeset)
+
+    query = from v in Version, 
+      where: v.entity_id == ^user.id,
+      where: v.entity_schema == ^User
+
+    assert 2 = Repo.aggregate(query, :count, :id)
   end
 end

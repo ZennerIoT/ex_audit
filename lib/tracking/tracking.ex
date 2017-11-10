@@ -1,7 +1,6 @@
 defmodule ExAudit.Tracking do
   @version_schema Application.get_env(:ex_audit, :version_schema)
   @tracked_schemas Application.get_env(:ex_audit, :tracked_schemas)
-  @ignored_fields [:__meta__, :__struct__]
 
   import Ecto.Query
 
@@ -28,11 +27,9 @@ defmodule ExAudit.Tracking do
     if schema in @tracked_schemas do
       assocs = schema.__schema__(:associations)
 
-      ignored_fields = @ignored_fields ++ assocs
-
       patch = ExAudit.Diff.diff(
-        Map.drop(old, ignored_fields), 
-        Map.drop(new, ignored_fields)
+        ExAudit.Tracker.map_struct(old) |> Map.drop(assocs),
+        ExAudit.Tracker.map_struct(new) |> Map.drop(assocs)
       )
 
       case patch do
