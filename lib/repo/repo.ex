@@ -7,12 +7,12 @@ defmodule ExAudit.Repo do
    * `update`, `update!`
    * `delete`, `delete!`
 
-  # Shared options
+  ### Shared options
 
   All normal Ecto.Repo options will work the same, however, there are additional options specific to ex_audit:
 
    * `:ex_audit_custom` - Keyword list of custom data that should be placed in new version entries. Entries in this
-     list overwrite the data from the ExAudit.track call
+     list overwrite data with the same keys from the ExAudit.track call
    * `:ignore_audit` - If true, ex_audit will not track changes made to entities
   
   """
@@ -191,7 +191,7 @@ defmodule ExAudit.Repo do
   Gathers the version history for the given struct, ordered by the time the changes
   happened from newest to oldest.
 
-  # Options
+  ### Options
 
    * `:render_structs` if true, renders the _resulting_ struct of the patch for every version in its history.
      This will shift the ids of the versions one down, so visualisations are correct and corresponding "Revert"
@@ -207,7 +207,7 @@ defmodule ExAudit.Repo do
 
   Inserts a new version entry in the process, with the `:rollback` flag set to true
 
-  # Options
+  ### Options
 
    * `:preload` if your changeset depends on assocs being preloaded on the struct before 
      updating it, you can define a list of assocs to be preloaded with this option
