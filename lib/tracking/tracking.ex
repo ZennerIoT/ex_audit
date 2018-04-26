@@ -13,7 +13,7 @@ defmodule ExAudit.Tracking do
     end
 
     new = case action do
-      x when x in [:updated, :created] -> 
+      x when x in [:updated, :created] ->
         resulting_struct
       :deleted -> %{}
     end
@@ -34,7 +34,7 @@ defmodule ExAudit.Tracking do
 
       case patch do
         :not_changed -> []
-        patch -> 
+        patch ->
           params = %{
             entity_id: Map.get(old, :id) || Map.get(new, :id),
             entity_schema: schema,
@@ -61,7 +61,7 @@ defmodule ExAudit.Tracking do
 
   def insert_versions(module, adapter, changes, opts) do
     now = DateTime.utc_now
-    custom_fields = 
+    custom_fields =
       Keyword.get(opts, :ex_audit_custom, [])
       |> Enum.into(%{})
 
@@ -83,16 +83,15 @@ defmodule ExAudit.Tracking do
       _ -> struct
     end
 
-    id = struct.id
     schema = struct.__struct__
 
-    assocs = 
-      schema.__schema__(:associations) 
+    assocs =
+      schema.__schema__(:associations)
       |> Enum.map(fn field -> {field, schema.__schema__(:association, field)} end)
       |> Enum.filter(fn {_, opts} -> Map.get(opts, :on_delete) == :delete_all end)
- 
+
     assocs
-    |> Enum.flat_map(fn {field, _opts} -> 
+    |> Enum.flat_map(fn {field, _opts} ->
       root = module.all(Ecto.assoc(struct, field))
       root ++ Enum.map(root, &find_assoc_deletion(module, adapter, &1, repo_opts))
     end)
