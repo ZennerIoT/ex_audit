@@ -124,6 +124,10 @@ defmodule ExAudit.Schema do
     end
   end
 
+  def run_in_multi(_repo, multi, fun, bang) do
+    run_in_multi(multi, fun, bang)
+  end
+
   def run_in_multi(multi, fun, bang) do
     case {fun.(), bang} do
       {{:ok, _} = ok, false} -> ok
