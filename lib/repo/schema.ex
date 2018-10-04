@@ -6,35 +6,43 @@ defmodule ExAudit.Schema do
   end
 
   def insert(module, adapter, struct, opts) do
-    opts = augment_opts(opts)
-    augment_transaction(module, fn ->
-      result = Ecto.Repo.Schema.insert(module, adapter, struct, opts)
+    if not Keyword.get(opts, :ignore_audit, false) do
+      opts = augment_opts(opts)
+      augment_transaction(module, fn ->
+        result = Ecto.Repo.Schema.insert(module, adapter, struct, opts)
 
-      case result do
-        {:ok, resulting_struct} ->
-          ExAudit.Tracking.track_change(module, adapter, :created, struct, resulting_struct, opts)
-        _ -> 
-          :ok
-      end
+        case result do
+          {:ok, resulting_struct} ->
+            ExAudit.Tracking.track_change(module, adapter, :created, struct, resulting_struct, opts)
+          _ ->
+            :ok
+        end
 
-      result
-    end)
+        result
+      end)
+    else
+      Ecto.Repo.Schema.update(module, adapter, struct, opts)
+    end
   end
 
   def update(module, adapter, struct, opts) do
-    opts = augment_opts(opts)
-    augment_transaction(module, fn ->
-      result = Ecto.Repo.Schema.update(module, adapter, struct, opts)
+    if not Keyword.get(opts, :ignore_audit, false) do
+      opts = augment_opts(opts)
+      augment_transaction(module, fn ->
+        result = Ecto.Repo.Schema.update(module, adapter, struct, opts)
 
-      case result do
-        {:ok, resulting_struct} ->
-          ExAudit.Tracking.track_change(module, adapter, :updated, struct, resulting_struct, opts)
-        _ -> 
-          :ok
-      end
+        case result do
+          {:ok, resulting_struct} ->
+            ExAudit.Tracking.track_change(module, adapter, :updated, struct, resulting_struct, opts)
+          _ ->
+            :ok
+        end
 
-      result
-    end)
+        result
+      end)
+    else
+      Ecto.Repo.Schema.update(module, adapter, struct, opts)
+    end
   end
 
   def insert_or_update(module, adapter, changeset, opts) do
@@ -52,7 +60,7 @@ defmodule ExAudit.Schema do
       case result do
         {:ok, resulting_struct} ->
           ExAudit.Tracking.track_change(module, adapter, :deleted, struct, resulting_struct, opts)
-        _ -> 
+        _ ->
           :ok
       end
 
@@ -96,7 +104,7 @@ defmodule ExAudit.Schema do
 
   # Cleans up the return value from repo.transaction
   defp augment_transaction(repo, fun, bang \\ false) do
-    multi = 
+    multi =
       Ecto.Multi.new()
       |> Ecto.Multi.run(:main, __MODULE__, :run_in_multi, [fun, bang])
 
@@ -116,12 +124,12 @@ defmodule ExAudit.Schema do
     end
   end
 
-  
-  # Gets the custom data from the ets store that stores it by PID, and adds 
+
+  # Gets the custom data from the ets store that stores it by PID, and adds
   # it to the list of custom data from the options list
-  # 
+  #
   # This is done so it works inside a transaction (which happens when ecto mutates assocs at the same time)
-  
+
   defp augment_opts(opts) do
     opts
     |> Keyword.put_new(:ex_audit_custom, [])
