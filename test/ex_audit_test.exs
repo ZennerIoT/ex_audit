@@ -72,6 +72,72 @@ defmodule ExAuditTest do
     assert version.actor_id == user.id
   end
 
+  test "should track insert_or_update!" do
+    user = Repo.insert_or_update!(User.changeset(%User{}, %{name: "Admin", email: "admin@example.com"}))
+    user = Repo.insert_or_update!(User.changeset(user, %{name: "SuperAdmin", email: "admin@example.com"}))
+
+
+    created = Repo.one(from v in Version,
+      where: v.entity_id == ^user.id,
+      where: v.entity_schema == ^User,
+      where: v.action == ^:created)
+
+    updated = Repo.one(from v in Version,
+      where: v.entity_id == ^user.id,
+      where: v.entity_schema == ^User,
+      where: v.action == ^:updated)
+
+    assert 2 = Repo.one(from v in Version,
+      where: v.entity_id == ^user.id,
+      where: v.entity_schema == ^User,
+      select: count(v.id))
+
+    assert %{
+      email: {:added, "admin@example.com"},
+      inserted_at: {:added, _},
+      name: {:added, "Admin"},
+      updated_at: {:added, _}
+    } = created.patch
+
+    assert patch: %{
+      name: {:changed, {:primitive_change, "Admin", "SuperAdmin"}},
+      updated_at: {:changed, _}
+    } = updated.patch
+  end
+
+  test "should track insert_or_update" do
+    {:ok, user} = Repo.insert_or_update(User.changeset(%User{}, %{name: "Admin", email: "admin@example.com"}))
+    {:ok, user} = Repo.insert_or_update(User.changeset(user, %{name: "SuperAdmin", email: "admin@example.com"}))
+
+
+    created = Repo.one(from v in Version,
+      where: v.entity_id == ^user.id,
+      where: v.entity_schema == ^User,
+      where: v.action == ^:created)
+
+    updated = Repo.one(from v in Version,
+      where: v.entity_id == ^user.id,
+      where: v.entity_schema == ^User,
+      where: v.action == ^:updated)
+
+    assert 2 = Repo.one(from v in Version,
+      where: v.entity_id == ^user.id,
+      where: v.entity_schema == ^User,
+      select: count(v.id))
+
+    assert %{
+      email: {:added, "admin@example.com"},
+      inserted_at: {:added, _},
+      name: {:added, "Admin"},
+      updated_at: {:added, _}
+    } = created.patch
+
+    assert patch: %{
+      name: {:changed, {:primitive_change, "Admin", "SuperAdmin"}},
+      updated_at: {:changed, _}
+    } = updated.patch
+  end
+
   test "should track custom data from plugs or similar" do
     user = Repo.insert!(User.changeset(%User{}, %{name: "Admin", email: "admin@example.com"}))
 
