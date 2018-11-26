@@ -1,5 +1,8 @@
 defmodule ExAudit.CustomData do
   use GenServer
+  @moduledoc """
+  ETS table that stores custom data for pids
+  """
 
   def start_link() do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
