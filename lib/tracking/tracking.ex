@@ -1,7 +1,4 @@
 defmodule ExAudit.Tracking do
-  @version_schema Application.get_env(:ex_audit, :version_schema)
-  @tracked_schemas Application.get_env(:ex_audit, :tracked_schemas)
-
   import Ecto.Query
 
   def find_changes(action, struct_or_changeset, resulting_struct) do
@@ -24,7 +21,7 @@ defmodule ExAudit.Tracking do
   def compare_versions(action, old, new) do
     schema = Map.get(old, :__struct__, Map.get(new, :__struct__))
 
-    if schema in @tracked_schemas do
+    if schema in tracked_schemas() do
       assocs = schema.__schema__(:associations)
 
       patch = ExAudit.Diff.diff(
@@ -73,7 +70,7 @@ defmodule ExAudit.Tracking do
     case changes do
       [] -> :ok
       _ ->
-        Ecto.Repo.Schema.insert_all(module, adapter, @version_schema, changes, opts)
+        Ecto.Repo.Schema.insert_all(module, adapter, version_schema(), changes, opts)
     end
   end
 
@@ -103,5 +100,13 @@ defmodule ExAudit.Tracking do
     deleted_structs = find_assoc_deletion(module, adapter, struct, opts)
 
     insert_versions(module, adapter, deleted_structs, opts)
+  end
+
+  defp tracked_schemas do
+    Application.get_env(:ex_audit, :tracked_schemas)
+  end
+
+  defp version_schema do
+    Application.get_env(:ex_audit, :version_schema)
   end
 end
