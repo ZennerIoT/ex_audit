@@ -1,6 +1,4 @@
 defmodule ExAudit.Tracking do
-  import Ecto.Query
-
   def find_changes(action, struct_or_changeset, resulting_struct) do
     old = case {action, struct_or_changeset} do
       {:created, _} -> %{}
