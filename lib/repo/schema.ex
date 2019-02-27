@@ -93,16 +93,6 @@ defmodule ExAudit.Schema do
     )
   end
 
-<<<<<<< HEAD
-  def insert_or_update!(module, adapter, changeset, opts) do
-    opts = augment_opts(opts)
-    augment_transaction(module, fn ->
-      result = Ecto.Repo.Schema.insert_or_update!(module, adapter, changeset, opts)
-      state = if changeset.data.__meta__.state == :loaded, do: :updated, else: :created
-      ExAudit.Tracking.track_change(module, adapter, state, changeset, result, opts)
-      result
-    end, true)
-=======
   def update!(module, struct, opts) do
     opts = augment_opts(opts)
 
@@ -115,7 +105,6 @@ defmodule ExAudit.Schema do
       end,
       true
     )
->>>>>>> Fix Ecto 3.0 adapter left overs
   end
 
   def insert_or_update!(module, changeset, opts) do
