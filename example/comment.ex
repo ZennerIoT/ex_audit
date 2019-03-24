@@ -8,7 +8,7 @@ defmodule ExAudit.Test.Comment do
 
     belongs_to :blog_post, ExAudit.Test.BlogPost
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :utc_datetime_usec)
   end
 
   def changeset(struct, params \\ %{}) do

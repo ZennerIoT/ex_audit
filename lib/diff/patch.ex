@@ -13,7 +13,7 @@ defmodule ExAudit.Patch do
   def patch(list, changes) when is_list(list) and is_list(changes) do
     changes
     |> Enum.reverse()
-    |> Enum.reduce(list, fn 
+    |> Enum.reduce(list, fn
       {:added_to_list, i, el}, list ->
         List.insert_at(list, i, el)
       {:removed_from_list, i, _}, list ->

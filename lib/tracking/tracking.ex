@@ -1,6 +1,4 @@
 defmodule ExAudit.Tracking do
-  import Ecto.Query
-
   def find_changes(action, struct_or_changeset, resulting_struct) do
     old = case {action, struct_or_changeset} do
       {:created, _} -> %{}
@@ -48,16 +46,16 @@ defmodule ExAudit.Tracking do
     end
   end
 
-  def track_change(module, adapter, action, changeset, resulting_struct, opts) do
+  def track_change(module, action, changeset, resulting_struct, opts) do
     if not Keyword.get(opts, :ignore_audit, false) do
       changes = find_changes(action, changeset, resulting_struct)
 
-      insert_versions(module, adapter, changes, opts)
+      insert_versions(module, changes, opts)
     end
   end
 
-  def insert_versions(module, adapter, changes, opts) do
-    now = DateTime.utc_now
+  def insert_versions(module, changes, opts) do
+    now = DateTime.utc_now()
     custom_fields =
       Keyword.get(opts, :ex_audit_custom, [])
       |> Enum.into(%{})
@@ -70,11 +68,11 @@ defmodule ExAudit.Tracking do
     case changes do
       [] -> :ok
       _ ->
-        Ecto.Repo.Schema.insert_all(module, adapter, version_schema(), changes, opts)
+        Ecto.Repo.Schema.insert_all(module, version_schema(), changes, opts)
     end
   end
 
-  def find_assoc_deletion(module, adapter, struct, repo_opts) do
+  def find_assoc_deletion(module, struct, repo_opts) do
     struct = case struct do
       %Ecto.Changeset{} -> Ecto.Changeset.apply_changes(struct)
       _ -> struct
@@ -90,16 +88,16 @@ defmodule ExAudit.Tracking do
     assocs
     |> Enum.flat_map(fn {field, _opts} ->
       root = module.all(Ecto.assoc(struct, field))
-      root ++ Enum.map(root, &find_assoc_deletion(module, adapter, &1, repo_opts))
+      root ++ Enum.map(root, &find_assoc_deletion(module, &1, repo_opts))
     end)
     |> List.flatten()
     |> Enum.flat_map(&compare_versions(:deleted, &1, %{}))
   end
 
-  def track_assoc_deletion(module, adapter, struct, opts) do
-    deleted_structs = find_assoc_deletion(module, adapter, struct, opts)
+  def track_assoc_deletion(module, struct, opts) do
+    deleted_structs = find_assoc_deletion(module, struct, opts)
 
-    insert_versions(module, adapter, deleted_structs, opts)
+    insert_versions(module, deleted_structs, opts)
   end
 
   defp tracked_schemas do

@@ -10,7 +10,7 @@ defmodule ExAudit.Test.BlogPost do
 
     has_many :comments, ExAudit.Test.Comment, on_delete: :delete_all
 
-    timestamps(type: :utc_datetime)
+    timestamps(type: :utc_datetime_usec)
   end
 
   defmodule Section do

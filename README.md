@@ -6,7 +6,7 @@ ExAudit plugs right into your ecto repositories and hooks all the data mutating 
 to track changes to entities in your database.
 
 ## Features
- 
+
  * Wraps Ecto.Repo, no need to change your existing codebase to start tracking changes
  * Creates +- diffs of the casted structs. Custom types are automatically supported.
  * Ships with functions to review the history of a struct and roll back changes
@@ -35,7 +35,7 @@ Also, new functions are added to the repository:
 
 With this API, you should be able to enable auditing across your entire application easily.
 
-If for some reason ExAudit does not track a change, you can manually add it with 
+If for some reason ExAudit does not track a change, you can manually add it with
 `ExAudit.Tracking.track_change(module, adapter, action, changeset, resulting_struct, opts)`.
 
 In the same module, there are a few other functions you might find useful to roll custom
@@ -68,8 +68,8 @@ You have to tell ExAudit which schemas to track and the module of your version s
 In your config.exs, write something like this:
 
 ```elixir
-config :ex_audit, 
-  version_schema: MyApp.Version, 
+config :ex_audit,
+  version_schema: MyApp.Version,
   tracked_schemas: [
     MyApp.User,
     MyApp.BlogPost,
@@ -103,7 +103,7 @@ defmodule MyApp.Version do
     field :action, ExAudit.Type.Action
 
     # when has this happened
-    field :recorded_at, :utc_datetime
+    field :recorded_at, :utc_datetime_usec
 
     # was this change part of a rollback?
     field :rollback, :boolean, default: false
@@ -132,16 +132,16 @@ defmodule MyApp.Migrations.AddVersions do
       add :patch, :binary
 
       # supports UUID and other types as well
-      add :entity_id, :integer 
+      add :entity_id, :integer
 
       # name of the table the entity is in
-      add :entity_schema, :string 
+      add :entity_schema, :string
 
       # type of the action that has happened to the entity (created, updated, deleted)
       add :action, :string
 
       # when has this happened
-      add :recorded_at, :utc_datetime
+      add :recorded_at, :utc_datetime_usec
 
       # was this change part of a rollback?
       add :rollback, :boolean, default: false
@@ -163,7 +163,7 @@ to the `:ex_audit_custom` option in any Repo function:
 MyApp.Repo.insert(changeset, ex_audit_custom: [user_id: conn.assigns.current_user.id])
 ```
 
-Of course it is tedious to upgrade your entire codebase just to track the user ID for example, so you can 
+Of course it is tedious to upgrade your entire codebase just to track the user ID for example, so you can
 also pass this data in a plug:
 
 ```elixir
@@ -179,17 +179,17 @@ defmodule MyApp.ExAuditPlug do
 end
 ```
 
-In the background, ExAudit.track will remember the PID it was called from and attaches the passed data to that 
+In the background, ExAudit.track will remember the PID it was called from and attaches the passed data to that
 PID. In most cases, the conn process will call the Repo functions, so ExAudit can get the data from that PID again deeper
 in the plug tree.
 
-In some cases where it is not possible to call the Repo function from the conn process, you have to pass the 
+In some cases where it is not possible to call the Repo function from the conn process, you have to pass the
 custom data manually via the options described above.
 
 Examples for data you might want to track additionally:
 
  * User ID
- * API Key ID 
+ * API Key ID
  * Message from the user describing what she changed
 
 ## Known issues

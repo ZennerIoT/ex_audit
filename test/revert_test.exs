@@ -15,10 +15,9 @@ defmodule RevertTest do
     assert length(Repo.history(user2)) == 1
 
     ch = User.changeset(user2, %{name: "Horst Dieter Schaf-Kuh"})
-
     Repo.update(ch)
 
-    version = Repo.one(from v in Version, 
+    version = Repo.one(from v in Version,
       where: v.entity_id == ^user2.id,
       where: v.entity_schema == ^User,
       where: v.action == ^:updated)
@@ -29,7 +28,7 @@ defmodule RevertTest do
 
     assert user2_rolled_back.name == "Horst Dieter Schaf"
 
-    version_rollback = Repo.one(from v in Version, 
+    version_rollback = Repo.one(from v in Version,
       where: v.entity_id == ^user2.id,
       where: v.entity_schema == ^User,
       where: v.action == ^:updated,
@@ -45,7 +44,7 @@ defmodule RevertTest do
 
     assert user2_rolled_back.name == "Horst Dieter Schaf"
 
-    version_rollback = Repo.one(from v in Version, 
+    version_rollback = Repo.one(from v in Version,
       where: v.entity_id == ^user2.id,
       where: v.entity_schema == ^User,
       where: v.action == ^:updated,

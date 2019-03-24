@@ -3,41 +3,41 @@ defmodule ExAudit.Queryable do
 
   require Logger
 
-  def update_all(module, adapter, queryable, updates, opts) do
-    Ecto.Repo.Queryable.update_all(module, adapter, queryable, updates, opts)
+  def update_all(module, queryable, updates, opts) do
+    Ecto.Repo.Queryable.update_all(module, queryable, updates, opts)
   end
 
-  def delete_all(module, adapter, queryable, opts) do
-    Ecto.Repo.Queryable.delete_all(module, adapter, queryable, opts)
+  def delete_all(module, queryable, opts) do
+    Ecto.Repo.Queryable.delete_all(module, queryable, opts)
   end
 
-  def history(module, adapter, struct, opts) do
+  def history(module, struct, opts) do
     import Ecto.Query
 
-    query = from v in @version_schema, 
+    query = from v in @version_schema,
       order_by: [desc: :recorded_at]
 
     # TODO what do when we get a query
 
     query = case struct do
-      # %Ecto.Query{from: struct} -> 
-      #   from v in query, 
+      # %Ecto.Query{from: struct} ->
+      #   from v in query,
       #     where: v.entity_id == subquery(from q in struct, select: q.id),
       #     where: v.entity_schema == ^struct
       %{__struct__: struct, id: id} when nil not in [struct, id] ->
-        from v in query, 
-          where: v.entity_id == ^id, 
+        from v in query,
+          where: v.entity_id == ^id,
           where: v.entity_schema == ^struct
     end
 
-    versions = Ecto.Repo.Queryable.all(module, adapter, query, opts)
+    versions = Ecto.Repo.Queryable.all(module, query, opts)
 
     if Keyword.get(opts, :render_struct, false) do
-      {versions, oldest_struct} = 
+      {versions, oldest_struct} =
         versions
-        |> Enum.map_reduce(struct, fn version, new_struct -> 
+        |> Enum.map_reduce(struct, fn version, new_struct ->
           old_struct = _revert(version, new_struct)
-          version = 
+          version =
             version
             |> Map.put(:original, empty_map_to_nil(new_struct))
             |> Map.put(:first, false)
@@ -52,19 +52,19 @@ defmodule ExAudit.Queryable do
       versions ++ [struct(@version_schema, %{
         id: oldest_id,
       }) |> Map.put(:original, empty_map_to_nil(oldest_struct))]
-    else  
+    else
       versions
     end
   end
 
   @drop_fields [:__meta__, :__struct__]
 
-  def revert(module, _adapter, version, opts) do
+  def revert(module, version, opts) do
     import Ecto.Query
 
     # get the history of the entity after this version
 
-    query = from v in @version_schema, 
+    query = from v in @version_schema,
       where: v.entity_id == ^version.entity_id,
       where: v.entity_schema == ^version.entity_schema,
       where: v.recorded_at >= ^version.recorded_at,
@@ -88,7 +88,7 @@ defmodule ExAudit.Queryable do
       {nil, %{}} -> {:insert, schema.changeset(struct(schema, %{}), Map.drop(result, drop_from_params))}
       {%{}, nil} -> {:delete, struct}
       {nil, nil} -> {nil, nil}
-      _ -> 
+      _ ->
         struct = case Keyword.get(opts, :preload) do
           nil -> struct
           [] -> struct

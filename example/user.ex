@@ -12,7 +12,7 @@ defmodule ExAudit.Test.User do
 
     has_many :groups, ExAudit.Test.UserGroup
 
-    timestamps()
+    timestamps(type: :utc_datetime_usec)
   end
 
   def changeset(struct, params \\ %{}) do
