@@ -170,7 +170,7 @@ defmodule ExAudit.Repo do
         ExAudit.Schema.insert_all(__MODULE__, schema_or_source, entries, opts)
       end
 
-      defoverridable [child_spec: 1]
+      defoverridable child_spec: 1
 
       # additional functions
 
@@ -209,5 +209,6 @@ defmodule ExAudit.Repo do
    * `:preload` if your changeset depends on assocs being preloaded on the struct before
      updating it, you can define a list of assocs to be preloaded with this option
   """
-  @callback revert(version :: struct, opts :: list) :: {:ok, struct} | {:error, changeset :: Ecto.Changeset.t}
+  @callback revert(version :: struct, opts :: list) ::
+              {:ok, struct} | {:error, changeset :: Ecto.Changeset.t()}
 end

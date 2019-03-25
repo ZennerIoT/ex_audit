@@ -22,7 +22,9 @@ defmodule ExAudit.CustomData do
 
   def handle_call({:get, pid}, _, ets) do
     case :ets.lookup(ets, pid) do
-      [] -> {:reply, [], ets}
+      [] ->
+        {:reply, [], ets}
+
       list ->
         values = Enum.flat_map(list, &elem(&1, 1))
         {:reply, values, ets}

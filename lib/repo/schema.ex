@@ -7,12 +7,14 @@ defmodule ExAudit.Schema do
 
   def insert(module, struct, opts) do
     opts = augment_opts(opts)
+
     augment_transaction(module, fn ->
       result = Ecto.Repo.Schema.insert(module, struct, opts)
 
       case result do
         {:ok, resulting_struct} ->
           ExAudit.Tracking.track_change(module, :created, struct, resulting_struct, opts)
+
         _ ->
           :ok
       end
@@ -23,12 +25,14 @@ defmodule ExAudit.Schema do
 
   def update(module, struct, opts) do
     opts = augment_opts(opts)
+
     augment_transaction(module, fn ->
       result = Ecto.Repo.Schema.update(module, struct, opts)
 
       case result do
         {:ok, resulting_struct} ->
           ExAudit.Tracking.track_change(module, :updated, struct, resulting_struct, opts)
+
         _ ->
           :ok
       end
@@ -39,12 +43,14 @@ defmodule ExAudit.Schema do
 
   def insert_or_update(module, changeset, opts) do
     opts = augment_opts(opts)
+
     augment_transaction(module, fn ->
       result = Ecto.Repo.Schema.insert_or_update(module, changeset, opts)
 
       case result do
         {:ok, resulting_struct} ->
           state = if changeset.data.__meta__.state == :loaded, do: :updated, else: :created
+
           ExAudit.Tracking.track_change(
             module,
             state,
@@ -63,6 +69,7 @@ defmodule ExAudit.Schema do
 
   def delete(module, struct, opts) do
     opts = augment_opts(opts)
+
     augment_transaction(module, fn ->
       ExAudit.Tracking.track_assoc_deletion(module, struct, opts)
       result = Ecto.Repo.Schema.delete(module, struct, opts)
@@ -70,6 +77,7 @@ defmodule ExAudit.Schema do
       case result do
         {:ok, resulting_struct} ->
           ExAudit.Tracking.track_change(module, :deleted, struct, resulting_struct, opts)
+
         _ ->
           :ok
       end
@@ -80,40 +88,60 @@ defmodule ExAudit.Schema do
 
   def insert!(module, struct, opts) do
     opts = augment_opts(opts)
-    augment_transaction(module, fn ->
-      result = Ecto.Repo.Schema.insert!(module, struct, opts)
-      ExAudit.Tracking.track_change(module, :created, struct, result, opts)
-      result
-    end, true)
+
+    augment_transaction(
+      module,
+      fn ->
+        result = Ecto.Repo.Schema.insert!(module, struct, opts)
+        ExAudit.Tracking.track_change(module, :created, struct, result, opts)
+        result
+      end,
+      true
+    )
   end
 
   def update!(module, struct, opts) do
     opts = augment_opts(opts)
-    augment_transaction(module, fn ->
-      result = Ecto.Repo.Schema.update!(module, struct, opts)
-      ExAudit.Tracking.track_change(module, :updated, struct, result, opts)
-      result
-    end, true)
+
+    augment_transaction(
+      module,
+      fn ->
+        result = Ecto.Repo.Schema.update!(module, struct, opts)
+        ExAudit.Tracking.track_change(module, :updated, struct, result, opts)
+        result
+      end,
+      true
+    )
   end
 
   def insert_or_update!(module, changeset, opts) do
     opts = augment_opts(opts)
-    augment_transaction(module, fn ->
-      result = Ecto.Repo.Schema.insert_or_update!(module, changeset, opts)
-      state = if changeset.data.__meta__.state == :loaded, do: :updated, else: :created
-      ExAudit.Tracking.track_change(module, state, changeset, result, opts)
-      result
-    end, true)
+
+    augment_transaction(
+      module,
+      fn ->
+        result = Ecto.Repo.Schema.insert_or_update!(module, changeset, opts)
+        state = if changeset.data.__meta__.state == :loaded, do: :updated, else: :created
+        ExAudit.Tracking.track_change(module, state, changeset, result, opts)
+        result
+      end,
+      true
+    )
   end
 
   def delete!(module, struct, opts) do
     opts = augment_opts(opts)
-    augment_transaction(module, fn ->
-      ExAudit.Tracking.track_assoc_deletion(module, struct, opts)
-      result = Ecto.Repo.Schema.delete!(module, struct, opts)
-      ExAudit.Tracking.track_change(module, :deleted, struct, result, opts)
-      result
-    end, true)
+
+    augment_transaction(
+      module,
+      fn ->
+        ExAudit.Tracking.track_assoc_deletion(module, struct, opts)
+        result = Ecto.Repo.Schema.delete!(module, struct, opts)
+        ExAudit.Tracking.track_change(module, :deleted, struct, result, opts)
+        result
+      end,
+      true
+    )
   end
 
   # Cleans up the return value from repo.transaction

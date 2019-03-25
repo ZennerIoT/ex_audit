@@ -1,17 +1,21 @@
 defmodule ExAudit.Tracking do
   def find_changes(action, struct_or_changeset, resulting_struct) do
-    old = case {action, struct_or_changeset} do
-      {:created, _} -> %{}
-      {_, %Ecto.Changeset{data: struct}} -> struct
-      {_, %{} = struct} -> struct
-      {_, nil} -> %{}
-    end
+    old =
+      case {action, struct_or_changeset} do
+        {:created, _} -> %{}
+        {_, %Ecto.Changeset{data: struct}} -> struct
+        {_, %{} = struct} -> struct
+        {_, nil} -> %{}
+      end
 
-    new = case action do
-      x when x in [:updated, :created] ->
-        resulting_struct
-      :deleted -> %{}
-    end
+    new =
+      case action do
+        x when x in [:updated, :created] ->
+          resulting_struct
+
+        :deleted ->
+          %{}
+      end
 
     compare_versions(action, old, new)
   end
@@ -22,13 +26,16 @@ defmodule ExAudit.Tracking do
     if schema in tracked_schemas() do
       assocs = schema.__schema__(:associations)
 
-      patch = ExAudit.Diff.diff(
-        ExAudit.Tracker.map_struct(old) |> Map.drop(assocs),
-        ExAudit.Tracker.map_struct(new) |> Map.drop(assocs)
-      )
+      patch =
+        ExAudit.Diff.diff(
+          ExAudit.Tracker.map_struct(old) |> Map.drop(assocs),
+          ExAudit.Tracker.map_struct(new) |> Map.drop(assocs)
+        )
 
       case patch do
-        :not_changed -> []
+        :not_changed ->
+          []
+
         patch ->
           params = %{
             entity_id: Map.get(old, :id) || Map.get(new, :id),
@@ -39,8 +46,6 @@ defmodule ExAudit.Tracking do
 
           [params]
       end
-
-
     else
       []
     end
@@ -56,27 +61,32 @@ defmodule ExAudit.Tracking do
 
   def insert_versions(module, changes, opts) do
     now = DateTime.utc_now()
+
     custom_fields =
       Keyword.get(opts, :ex_audit_custom, [])
       |> Enum.into(%{})
 
-    changes = Enum.map(changes, fn change ->
-      change = Map.put(change, :recorded_at, now)
-      Map.merge(change, custom_fields)
-    end)
+    changes =
+      Enum.map(changes, fn change ->
+        change = Map.put(change, :recorded_at, now)
+        Map.merge(change, custom_fields)
+      end)
 
     case changes do
-      [] -> :ok
+      [] ->
+        :ok
+
       _ ->
         Ecto.Repo.Schema.insert_all(module, version_schema(), changes, opts)
     end
   end
 
   def find_assoc_deletion(module, struct, repo_opts) do
-    struct = case struct do
-      %Ecto.Changeset{} -> Ecto.Changeset.apply_changes(struct)
-      _ -> struct
-    end
+    struct =
+      case struct do
+        %Ecto.Changeset{} -> Ecto.Changeset.apply_changes(struct)
+        _ -> struct
+      end
 
     schema = struct.__struct__
 
