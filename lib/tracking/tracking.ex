@@ -70,7 +70,7 @@ defmodule ExAudit.Tracking do
         :ok
 
       _ ->
-        Ecto.Repo.Schema.insert_all(module, version_schema(), changes, opts)
+        module.insert_all(version_schema(), changes, opts)
     end
   end
 

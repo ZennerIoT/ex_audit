@@ -59,113 +59,123 @@ defmodule ExAudit.Repo do
         adapter.checkout(meta, opts, fun)
       end
 
+      @compile {:inline, get_dynamic_repo: 0}
+
+      def get_dynamic_repo() do
+        Process.get({__MODULE__, :dynamic_repo}, __MODULE__)
+      end
+
+      def put_dynamic_repo(dynamic) when is_atom(dynamic) or is_pid(dynamic) do
+        Process.put({__MODULE__, :dynamic_repo}, dynamic) || __MODULE__
+      end
+
       ## Transactions
 
       if Ecto.Adapter.Transaction in behaviours do
         def transaction(fun_or_multi, opts \\ []) do
-          Ecto.Repo.Transaction.transaction(__MODULE__, fun_or_multi, opts)
+          Ecto.Repo.Transaction.transaction(get_dynamic_repo(), fun_or_multi, opts)
         end
 
         def in_transaction? do
-          Ecto.Repo.Transaction.in_transaction?(__MODULE__)
+          Ecto.Repo.Transaction.in_transaction?(get_dynamic_repo())
         end
 
         @spec rollback(term) :: no_return
         def rollback(value) do
-          Ecto.Repo.Transaction.rollback(__MODULE__, value)
+          Ecto.Repo.Transaction.rollback(get_dynamic_repo(), value)
         end
       end
 
       if Ecto.Adapter.Queryable in behaviours do
-        def insert_all(schema_or_source, entries, opts \\ []) do
-          ExAudit.Schema.insert_all(__MODULE__, schema_or_source, entries, opts)
-        end
-
         def update_all(queryable, updates, opts \\ []) do
-          ExAudit.Queryable.update_all(__MODULE__, queryable, updates, opts)
+          Ecto.Repo.Queryable.update_all(get_dynamic_repo(), queryable, updates, opts)
         end
 
         def delete_all(queryable, opts \\ []) do
-          ExAudit.Queryable.delete_all(__MODULE__, queryable, opts)
+          Ecto.Repo.Queryable.delete_all(get_dynamic_repo(), queryable, opts)
         end
 
         def all(queryable, opts \\ []) do
-          Ecto.Repo.Queryable.all(__MODULE__, queryable, opts)
+          Ecto.Repo.Queryable.all(get_dynamic_repo(), queryable, opts)
         end
 
         def stream(queryable, opts \\ []) do
-          Ecto.Repo.Queryable.stream(__MODULE__, queryable, opts)
+          Ecto.Repo.Queryable.stream(get_dynamic_repo(), queryable, opts)
         end
 
         def get(queryable, id, opts \\ []) do
-          Ecto.Repo.Queryable.get(__MODULE__, queryable, id, opts)
+          Ecto.Repo.Queryable.get(get_dynamic_repo(), queryable, id, opts)
         end
 
         def get!(queryable, id, opts \\ []) do
-          Ecto.Repo.Queryable.get!(__MODULE__, queryable, id, opts)
+          Ecto.Repo.Queryable.get!(get_dynamic_repo(), queryable, id, opts)
         end
 
         def get_by(queryable, clauses, opts \\ []) do
-          Ecto.Repo.Queryable.get_by(__MODULE__, queryable, clauses, opts)
+          Ecto.Repo.Queryable.get_by(get_dynamic_repo(), queryable, clauses, opts)
         end
 
         def get_by!(queryable, clauses, opts \\ []) do
-          Ecto.Repo.Queryable.get_by!(__MODULE__, queryable, clauses, opts)
+          Ecto.Repo.Queryable.get_by!(get_dynamic_repo(), queryable, clauses, opts)
         end
 
         def one(queryable, opts \\ []) do
-          Ecto.Repo.Queryable.one(__MODULE__, queryable, opts)
+          Ecto.Repo.Queryable.one(get_dynamic_repo(), queryable, opts)
         end
 
         def one!(queryable, opts \\ []) do
-          Ecto.Repo.Queryable.one!(__MODULE__, queryable, opts)
+          Ecto.Repo.Queryable.one!(get_dynamic_repo(), queryable, opts)
         end
 
         def aggregate(queryable, aggregate, field, opts \\ [])
             when aggregate in [:count, :avg, :max, :min, :sum] and is_atom(field) do
-          Ecto.Repo.Queryable.aggregate(__MODULE__, queryable, aggregate, field, opts)
+          Ecto.Repo.Queryable.aggregate(get_dynamic_repo(), queryable, aggregate, field, opts)
         end
 
         def exists?(queryable, opts \\ []) do
-          Ecto.Repo.Queryable.exists?(__MODULE__, queryable, opts)
+          Ecto.Repo.Queryable.exists?(get_dynamic_repo(), queryable, opts)
         end
 
         def preload(struct_or_structs_or_nil, preloads, opts \\ []) do
-          Ecto.Repo.Preloader.preload(struct_or_structs_or_nil, __MODULE__, preloads, opts)
+          Ecto.Repo.Preloader.preload(struct_or_structs_or_nil, get_dynamic_repo(), preloads, opts)
         end
       end
 
       if Ecto.Adapter.Schema in behaviours do
         def insert(struct, opts \\ []) do
-          ExAudit.Schema.insert(__MODULE__, struct, opts)
+          ExAudit.Schema.insert(__MODULE__, get_dynamic_repo(), struct, opts)
         end
 
         def update(struct, opts \\ []) do
-          ExAudit.Schema.update(__MODULE__, struct, opts)
+          ExAudit.Schema.update(__MODULE__, get_dynamic_repo(), struct, opts)
         end
 
         def insert_or_update(changeset, opts \\ []) do
-          ExAudit.Schema.insert_or_update(__MODULE__, changeset, opts)
+          ExAudit.Schema.insert_or_update(__MODULE__, get_dynamic_repo(), changeset, opts)
         end
 
         def delete(struct, opts \\ []) do
-          ExAudit.Schema.delete(__MODULE__, struct, opts)
+          ExAudit.Schema.delete(__MODULE__, get_dynamic_repo(), struct, opts)
         end
 
         def insert!(struct, opts \\ []) do
-          ExAudit.Schema.insert!(__MODULE__, struct, opts)
+          ExAudit.Schema.insert!(__MODULE__, get_dynamic_repo(), struct, opts)
         end
 
         def update!(struct, opts \\ []) do
-          ExAudit.Schema.update!(__MODULE__, struct, opts)
+          ExAudit.Schema.update!(__MODULE__, get_dynamic_repo(), struct, opts)
         end
 
         def insert_or_update!(changeset, opts \\ []) do
-          ExAudit.Schema.insert_or_update!(__MODULE__, changeset, opts)
+          ExAudit.Schema.insert_or_update!(__MODULE__, get_dynamic_repo(), changeset, opts)
         end
 
         def delete!(struct, opts \\ []) do
-          ExAudit.Schema.delete!(__MODULE__, struct, opts)
+          ExAudit.Schema.delete!(__MODULE__, get_dynamic_repo(), struct, opts)
+        end
+
+        def insert_all(schema_or_source, entries, opts \\ []) do
+          ExAudit.Schema.insert_all(__MODULE__, get_dynamic_repo(), schema_or_source, entries, opts)
         end
       end
 
