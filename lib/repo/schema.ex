@@ -38,9 +38,21 @@ defmodule ExAudit.Schema do
   end
 
   def insert_or_update(module, adapter, changeset, opts) do
-    # TODO!
     opts = augment_opts(opts)
-    Ecto.Repo.Schema.insert_or_update(module, adapter, changeset, opts)
+    augment_transaction(module, fn ->
+      result = Ecto.Repo.Schema.insert_or_update(module, adapter, changeset, opts)
+
+      case result do
+        {:ok, resulting_struct} ->
+          state = if changeset.data.__meta__.state == :loaded, do: :updated, else: :created
+          ExAudit.Tracking.track_change(module, adapter, state, changeset, resulting_struct, opts)
+
+        _ ->
+          :ok
+      end
+
+      result
+    end)
   end
 
   def delete(module, adapter, struct, opts) do
@@ -79,9 +91,13 @@ defmodule ExAudit.Schema do
   end
 
   def insert_or_update!(module, adapter, changeset, opts) do
-    # TODO
     opts = augment_opts(opts)
-    Ecto.Repo.Schema.insert_or_update!(module, adapter, changeset, opts)
+    augment_transaction(module, fn ->
+      result = Ecto.Repo.Schema.insert_or_update!(module, adapter, changeset, opts)
+      state = if changeset.data.__meta__.state == :loaded, do: :updated, else: :created
+      ExAudit.Tracking.track_change(module, adapter, state, changeset, result, opts)
+      result
+    end, true)
   end
 
   def delete!(module, adapter, struct, opts) do
