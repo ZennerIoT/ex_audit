@@ -73,7 +73,7 @@ defmodule ExAudit.Repo do
 
       if Ecto.Adapter.Transaction in behaviours do
         def transaction(fun_or_multi, opts \\ []) do
-          Ecto.Repo.Transaction.transaction(get_dynamic_repo(), fun_or_multi, opts)
+          Ecto.Repo.Transaction.transaction(__MODULE__, get_dynamic_repo(), fun_or_multi, opts)
         end
 
         def in_transaction? do
