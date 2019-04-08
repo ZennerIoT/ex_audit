@@ -48,7 +48,7 @@ Add ex_audit to your list of dependencies:
 ```elixir
 def deps do
   [
-    {:ex_audit, "~> 0.4.2"}
+    {:ex_audit, "~> 0.6"}
   ]
 end
 ```
@@ -192,10 +192,13 @@ Examples for data you might want to track additionally:
  * API Key ID 
  * Message from the user describing what she changed
 
-## Known issues
+## Ecto versions
 
- - Due to usage of Repo.transaction internally, error changesets that are generated when the DB hits a constraint error are not
-   returned correctly. I'm looking into options so those changesets will be returned correctly.
+If you're using ecto 2.x, use `{:ex_audit, "~> 0.5"}`
+
+If you're using ecto 3.0, upgrade ecto to 3.1
+
+If you're using ecto 3.1, use `{:ex_audit, "~> 0.6"}`
 
 ## More
 
