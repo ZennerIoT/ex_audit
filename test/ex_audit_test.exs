@@ -19,7 +19,7 @@ defmodule ExAuditTest do
     assert params.name == user.name
     assert params.email == user.email
 
-    version = Repo.one(from v in Version, 
+    version = Repo.one(from v in Version,
       where: v.entity_id == ^user.id,
       where: v.entity_schema == ^User,
       where: v.action == ^:created)
@@ -34,14 +34,14 @@ defmodule ExAuditTest do
     changeset = User.changeset(user, params)
 
     {:ok, user} = Repo.update(changeset)
-    version = Repo.one(from v in Version, 
+    version = Repo.one(from v in Version,
       where: v.entity_id == ^user.id,
       where: v.entity_schema == ^User,
       where: v.action == ^:updated)
 
     assert version.patch.email == {:changed, {:primitive_change, changeset.data.email, params.email}}
 
-    {:ok, user} = Repo.delete(user) 
+    {:ok, user} = Repo.delete(user)
     version = Repo.one(from v in Version,
       where: v.entity_id == ^user.id,
       where: v.entity_schema == ^User,
@@ -60,7 +60,7 @@ defmodule ExAuditTest do
     changeset = BlogPost.changeset(%BlogPost{}, %{
       author_id: user.id,
       title: "My First Post"
-    }) 
+    })
 
     {:ok, blog_post} = Repo.insert(changeset, ex_audit_custom: [actor_id: user.id])
 
@@ -74,6 +74,8 @@ defmodule ExAuditTest do
 
   test "should track insert_or_update!" do
     user = Repo.insert_or_update!(User.changeset(%User{}, %{name: "Admin", email: "admin@example.com"}))
+    # We sleep here to simulate an update to the updated_at field that tracks only seconds
+    Process.sleep(1000)
     user = Repo.insert_or_update!(User.changeset(user, %{name: "SuperAdmin", email: "admin@example.com"}))
 
 
@@ -101,12 +103,14 @@ defmodule ExAuditTest do
 
     assert patch: %{
       name: {:changed, {:primitive_change, "Admin", "SuperAdmin"}},
-      updated_at: {:changed, _}
+      updated_at: {:changed, %{second: {:changed, {:primitive_change, _, _}}}}
     } = updated.patch
   end
 
   test "should track insert_or_update" do
     {:ok, user} = Repo.insert_or_update(User.changeset(%User{}, %{name: "Admin", email: "admin@example.com"}))
+    # We sleep here to simulate an update to the updated_at field that tracks only seconds
+    Process.sleep(1000)
     {:ok, user} = Repo.insert_or_update(User.changeset(user, %{name: "SuperAdmin", email: "admin@example.com"}))
 
 
@@ -134,7 +138,7 @@ defmodule ExAuditTest do
 
     assert patch: %{
       name: {:changed, {:primitive_change, "Admin", "SuperAdmin"}},
-      updated_at: {:changed, _}
+      updated_at: {:changed, %{second: {:changed, {:primitive_change, _, _}}}}
     } = updated.patch
   end
 
@@ -144,7 +148,7 @@ defmodule ExAuditTest do
     changeset = BlogPost.changeset(%BlogPost{}, %{
       author_id: user.id,
       title: "My Second Post"
-    }) 
+    })
 
     ExAudit.track(actor_id: user.id)
 
@@ -169,7 +173,7 @@ defmodule ExAuditTest do
 
     assert {:ok, user} = Repo.update(changeset)
 
-    query = from v in Version, 
+    query = from v in Version,
       where: v.entity_id == ^user.id,
       where: v.entity_schema == ^User
 

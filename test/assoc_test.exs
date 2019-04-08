@@ -69,12 +69,12 @@ defmodule AssocTest do
     user = Util.create_user()
 
     ch = UserGroup.changeset(%UserGroup{}, %{name: "a group", user_id: user.id})
-    {:ok, group} = Repo.insert(ch)
+    {:ok, _group} = Repo.insert(ch)
 
     import Ecto.Changeset
 
-    deletion = 
-      user 
+    deletion =
+      user
       |> change
       |> no_assoc_constraint(:groups)
 
