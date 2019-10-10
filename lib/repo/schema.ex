@@ -1,5 +1,6 @@
 defmodule ExAudit.Schema do
   require Logger
+
   def insert_all(module, name, schema_or_source, entries, tuplet = {_adapter_meta, opts}) do
     # TODO!
     opts = augment_opts(opts)
@@ -32,7 +33,7 @@ defmodule ExAudit.Schema do
 
       case result do
         {:ok, resulting_struct} ->
-            track_change(module, :updated, struct, resulting_struct, opts)
+          track_change(module, :updated, struct, resulting_struct, opts)
 
         _ ->
           :ok

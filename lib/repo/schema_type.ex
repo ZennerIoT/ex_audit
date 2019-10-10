@@ -39,7 +39,9 @@ defmodule ExAudit.Type.Schema do
 
   def type, do: :string
 
-  defp schemas do
-    Application.get_env(:ex_audit, :tracked_schemas, [])
+  defp schemas() do
+    Application.get_env(:ex_audit, :ecto_repos)
+    |> Map.values()
+    |> Enum.flat_map(& &1.tracked_schemas)
   end
 end
