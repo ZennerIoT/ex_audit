@@ -1,4 +1,5 @@
 defmodule ExAudit.Schema do
+  require Logger
   def insert_all(module, name, schema_or_source, entries, opts) do
     # TODO!
     opts = augment_opts(opts)
@@ -13,7 +14,7 @@ defmodule ExAudit.Schema do
 
       case result do
         {:ok, resulting_struct} ->
-          ExAudit.Tracking.track_change(module, :created, struct, resulting_struct, opts)
+          track_change(module, :created, struct, resulting_struct, opts)
 
         _ ->
           :ok
@@ -31,7 +32,7 @@ defmodule ExAudit.Schema do
 
       case result do
         {:ok, resulting_struct} ->
-          ExAudit.Tracking.track_change(module, :updated, struct, resulting_struct, opts)
+            track_change(module, :updated, struct, resulting_struct, opts)
 
         _ ->
           :ok
@@ -50,7 +51,7 @@ defmodule ExAudit.Schema do
       case result do
         {:ok, resulting_struct} ->
           state = if changeset.data.__meta__.state == :loaded, do: :updated, else: :created
-          ExAudit.Tracking.track_change(module, state, changeset, resulting_struct, opts)
+          track_change(module, state, changeset, resulting_struct, opts)
 
         _ ->
           :ok
@@ -64,12 +65,12 @@ defmodule ExAudit.Schema do
     opts = augment_opts(opts)
 
     augment_transaction(module, fn ->
-      ExAudit.Tracking.track_assoc_deletion(module, struct, opts)
+      track_assoc_deletion(module, struct, opts)
       result = Ecto.Repo.Schema.delete(module, name, struct, opts)
 
       case result do
         {:ok, resulting_struct} ->
-          ExAudit.Tracking.track_change(module, :deleted, struct, resulting_struct, opts)
+          track_change(module, :deleted, struct, resulting_struct, opts)
 
         _ ->
           :ok
@@ -86,7 +87,7 @@ defmodule ExAudit.Schema do
       module,
       fn ->
         result = Ecto.Repo.Schema.insert!(module, name, struct, opts)
-        ExAudit.Tracking.track_change(module, :created, struct, result, opts)
+        track_change(module, :created, struct, result, opts)
         result
       end,
       true
@@ -100,7 +101,7 @@ defmodule ExAudit.Schema do
       module,
       fn ->
         result = Ecto.Repo.Schema.update!(module, name, struct, opts)
-        ExAudit.Tracking.track_change(module, :updated, struct, result, opts)
+        track_change(module, :updated, struct, result, opts)
         result
       end,
       true
@@ -115,7 +116,7 @@ defmodule ExAudit.Schema do
       fn ->
         result = Ecto.Repo.Schema.insert_or_update!(module, name, changeset, opts)
         state = if changeset.data.__meta__.state == :loaded, do: :updated, else: :created
-        ExAudit.Tracking.track_change(module, state, changeset, result, opts)
+        track_change(module, state, changeset, result, opts)
         result
       end,
       true
@@ -128,9 +129,9 @@ defmodule ExAudit.Schema do
     augment_transaction(
       module,
       fn ->
-        ExAudit.Tracking.track_assoc_deletion(module, struct, opts)
+        track_assoc_deletion(module, struct, opts)
         result = Ecto.Repo.Schema.delete!(module, name, struct, opts)
-        ExAudit.Tracking.track_change(module, :deleted, struct, result, opts)
+        track_change(module, :deleted, struct, result, opts)
         result
       end,
       true
@@ -173,5 +174,26 @@ defmodule ExAudit.Schema do
         _ -> ExAudit.CustomData.get()
       end ++ custom_fields
     end)
+  end
+
+  # It wraps Tracking.track_change in a try rescue block because we don't want to crash the caller process when there is exception in track_change
+  # It's opinionated here that tracking is something that's not mission critical and thus an exception caused by bug should
+  # TODO make this try rescue behaviour configurable
+  defp track_change(module, action, changeset, resulting_struct, opts) do
+    ExAudit.Tracking.track_change(module, action, changeset, resulting_struct, opts)
+  rescue
+    e ->
+      :error
+      |> Exception.format(e, __STACKTRACE__)
+      |> Logger.error(crash_reason: {e, __STACKTRACE__})
+  end
+
+  def track_assoc_deletion(module, struct, opts) do
+    ExAudit.Tracking.track_assoc_deletion(module, struct, opts)
+  rescue
+    e ->
+      :error
+      |> Exception.format(e, __STACKTRACE__)
+      |> Logger.error(crash_reason: {e, __STACKTRACE__})
   end
 end
