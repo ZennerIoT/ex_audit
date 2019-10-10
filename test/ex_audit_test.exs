@@ -1,5 +1,5 @@
 defmodule ExAuditTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
   doctest ExAudit
 
   import Ecto.Query
@@ -244,6 +244,21 @@ defmodule ExAuditTest do
       )
 
     assert 2 = Repo.aggregate(query, :count, :id)
+  end
+
+  test "will not crash the caller process if the tracking " do
+    original = Application.get_env(:ex_audit, :ecto_repos)
+    Application.put_env(:ex_audit, :ecto_repos, :crash)
+
+    ExUnit.Callbacks.on_exit(fn ->
+      Application.put_env(:ex_audit, :ecto_repos, original)
+    end)
+
+    user = Util.create_user()
+
+    changeset = User.changeset(user, %{transient_field: 3})
+
+    assert {:ok, user} = Repo.update(changeset)
   end
 
   describe "history_query/1" do
