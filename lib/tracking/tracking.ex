@@ -70,7 +70,7 @@ defmodule ExAudit.Tracking do
         :ok
 
       _ ->
-        module.insert_all(version_schema(), changes, opts)
+        module.insert_all(version_schema(), changes)
     end
   end
 
