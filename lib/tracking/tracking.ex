@@ -53,7 +53,7 @@ defmodule ExAudit.Tracking do
   end
 
   def insert_versions(module, changes, opts) do
-    now = DateTime.utc_now()
+    now = DateTime.utc_now()|>DateTime.truncate(:second)
 
     custom_fields =
       Keyword.get(opts, :ex_audit_custom, [])
