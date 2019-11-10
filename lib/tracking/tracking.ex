@@ -70,7 +70,8 @@ defmodule ExAudit.Tracking do
         :ok
 
       _ ->
-        module.insert_all(version_schema(), changes)
+        opts = Keyword.drop(opts, [:on_conflict, :conflict_target])
+        module.insert_all(version_schema(), changes, opts)
     end
   end
 
