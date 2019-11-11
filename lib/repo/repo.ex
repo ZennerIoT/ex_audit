@@ -137,7 +137,12 @@ defmodule ExAudit.Repo do
         end
 
         def preload(struct_or_structs_or_nil, preloads, opts \\ []) do
-          Ecto.Repo.Preloader.preload(struct_or_structs_or_nil, get_dynamic_repo(), preloads, opts)
+          Ecto.Repo.Preloader.preload(
+            struct_or_structs_or_nil,
+            get_dynamic_repo(),
+            preloads,
+            opts
+          )
         end
 
         def prepare_query(operation, query, opts), do: {query, opts}
@@ -178,7 +183,13 @@ defmodule ExAudit.Repo do
         end
 
         def insert_all(schema_or_source, entries, opts \\ []) do
-          ExAudit.Schema.insert_all(__MODULE__, get_dynamic_repo(), schema_or_source, entries, opts)
+          ExAudit.Schema.insert_all(
+            __MODULE__,
+            get_dynamic_repo(),
+            schema_or_source,
+            entries,
+            opts
+          )
         end
       end
 

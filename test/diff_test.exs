@@ -13,16 +13,16 @@ defmodule DiffTest do
     b = [1, 4, 6, 1]
 
     assert Diff.diff(a, b) == [
-      {:changed_in_list, 1, {:primitive_change, 2, 4}},
-      {:changed_in_list, 2, {:primitive_change, 3, 6}},
-      {:added_to_list, 3, 1}
-    ]
+             {:changed_in_list, 1, {:primitive_change, 2, 4}},
+             {:changed_in_list, 2, {:primitive_change, 3, 6}},
+             {:added_to_list, 3, 1}
+           ]
 
     assert Diff.diff(b, a) == [
-      {:changed_in_list, 1, {:primitive_change, 4, 2}},
-      {:changed_in_list, 2, {:primitive_change, 6, 3}},
-      {:removed_from_list, 3, 1}
-    ]
+             {:changed_in_list, 1, {:primitive_change, 4, 2}},
+             {:changed_in_list, 2, {:primitive_change, 6, 3}},
+             {:removed_from_list, 3, 1}
+           ]
   end
 
   test "should diff maps" do
@@ -37,8 +37,8 @@ defmodule DiffTest do
     }
 
     assert Diff.diff(a, b) == %{
-      foo: {:changed, {:primitive_change, 1, 2}}
-    }
+             foo: {:changed, {:primitive_change, 1, 2}}
+           }
   end
 
   test "should detect if there were no changes" do
@@ -65,11 +65,13 @@ defmodule DiffTest do
     }
 
     assert Diff.diff(a, b) == %{
-      foo: {:changed, %{
-        value: {:changed, {:primitive_change, 13, 12}}
-      }},
-      bar: {:added, 12},
-      baz: {:removed, 1}
-    }
+             foo:
+               {:changed,
+                %{
+                  value: {:changed, {:primitive_change, 13, 12}}
+                }},
+             bar: {:added, 12},
+             baz: {:removed, 1}
+           }
   end
 end

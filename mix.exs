@@ -7,9 +7,9 @@ defmodule ExAudit.Mixfile do
       app: :ex_audit,
       version: "0.6.0",
       elixir: "~> 1.5",
-      start_permanent: Mix.env == :prod,
+      start_permanent: Mix.env() == :prod,
       deps: deps(),
-      elixirc_paths: paths(Mix.env),
+      elixirc_paths: paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [coveralls: :test],
       source_url: "https://github.com/zenneriot/ex_audit",
@@ -37,7 +37,6 @@ defmodule ExAudit.Mixfile do
   end
 
   def paths(_), do: paths(:default)
-
 
   # Run "mix help compile.app" to learn about applications.
   def application do
