@@ -139,6 +139,9 @@ defmodule ExAudit.Repo do
         def preload(struct_or_structs_or_nil, preloads, opts \\ []) do
           Ecto.Repo.Preloader.preload(struct_or_structs_or_nil, get_dynamic_repo(), preloads, opts)
         end
+
+        def prepare_query(operation, query, opts), do: {query, opts}
+        defoverridable prepare_query: 3
       end
 
       if Ecto.Adapter.Schema in behaviours do
