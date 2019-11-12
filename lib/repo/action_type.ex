@@ -1,5 +1,5 @@
 defmodule ExAudit.Type.Action do
-  @behaviour Ecto.Type
+  use Ecto.Type
 
   @actions ~w[created updated deleted]a
 
@@ -26,8 +26,4 @@ defmodule ExAudit.Type.Action do
   def cast(_), do: :error
 
   def type, do: :string
-
-  def embed_as(_), do: :self
-  def equal?(term1, term2), do: term1 == term2
-  defoverridable embed_as: 1, equal?: 2
 end

@@ -1,5 +1,5 @@
 defmodule ExAudit.Type.Schema do
-  @behaviour Ecto.Type
+  use Ecto.Type
 
   def cast(schema) when is_atom(schema) do
     case Enum.member?(schemas(), schema) do
@@ -40,8 +40,4 @@ defmodule ExAudit.Type.Schema do
   defp schemas do
     Application.get_env(:ex_audit, :tracked_schemas, [])
   end
-
-  def embed_as(_), do: :self
-  def equal?(term1, term2), do: term1 == term2
-  defoverridable embed_as: 1, equal?: 2
 end
