@@ -5,11 +5,11 @@ defmodule ExAudit.Mixfile do
     [
       description: "Ecto auditing library that transparently tracks changes and can revert them",
       app: :ex_audit,
-      version: "0.6.0",
-      elixir: "~> 1.5",
-      start_permanent: Mix.env == :prod,
+      version: "0.7.0",
+      elixir: "~> 1.6",
+      start_permanent: Mix.env() == :prod,
       deps: deps(),
-      elixirc_paths: paths(Mix.env),
+      elixirc_paths: paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [coveralls: :test],
       source_url: "https://github.com/zenneriot/ex_audit",
@@ -38,7 +38,6 @@ defmodule ExAudit.Mixfile do
 
   def paths(_), do: paths(:default)
 
-
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
@@ -50,9 +49,9 @@ defmodule ExAudit.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ecto, "~> 3.1.1"},
-      {:ecto_sql, "~> 3.1.0"},
-      {:postgrex, "~> 0.14.0", only: :test},
+      {:ecto, "~> 3.2.0"},
+      {:ecto_sql, "~> 3.2.0"},
+      {:postgrex, "~> 0.15.0", only: :test},
       {:excoveralls, "~> 0.7", only: :test},
       {:ex_doc, "~> 0.19", runtime: false, only: :dev}
     ]

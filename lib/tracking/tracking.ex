@@ -1,17 +1,21 @@
 defmodule ExAudit.Tracking do
   def find_changes(action, struct_or_changeset, resulting_struct) do
-    old = case {action, struct_or_changeset} do
-      {:created, _} -> %{}
-      {_, %Ecto.Changeset{data: struct}} -> struct
-      {_, %{} = struct} -> struct
-      {_, nil} -> %{}
-    end
+    old =
+      case {action, struct_or_changeset} do
+        {:created, _} -> %{}
+        {_, %Ecto.Changeset{data: struct}} -> struct
+        {_, %{} = struct} -> struct
+        {_, nil} -> %{}
+      end
 
-    new = case action do
-      x when x in [:updated, :created] ->
-        resulting_struct
-      :deleted -> %{}
-    end
+    new =
+      case action do
+        x when x in [:updated, :created] ->
+          resulting_struct
+
+        :deleted ->
+          %{}
+      end
 
     compare_versions(action, old, new)
   end
@@ -22,13 +26,16 @@ defmodule ExAudit.Tracking do
     if schema in tracked_schemas() do
       assocs = schema.__schema__(:associations)
 
-      patch = ExAudit.Diff.diff(
-        ExAudit.Tracker.map_struct(old) |> Map.drop(assocs),
-        ExAudit.Tracker.map_struct(new) |> Map.drop(assocs)
-      )
+      patch =
+        ExAudit.Diff.diff(
+          ExAudit.Tracker.map_struct(old) |> Map.drop(assocs),
+          ExAudit.Tracker.map_struct(new) |> Map.drop(assocs)
+        )
 
       case patch do
-        :not_changed -> []
+        :not_changed ->
+          []
+
         patch ->
           params = %{
             entity_id: Map.get(old, :id) || Map.get(new, :id),

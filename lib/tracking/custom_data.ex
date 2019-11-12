@@ -1,5 +1,6 @@
 defmodule ExAudit.CustomData do
   use GenServer
+
   @moduledoc """
   ETS table that stores custom data for pids
   """
@@ -25,7 +26,9 @@ defmodule ExAudit.CustomData do
 
   def handle_call({:get, pid}, _, ets) do
     case :ets.lookup(ets, pid) do
-      [] -> {:reply, [], ets}
+      [] ->
+        {:reply, [], ets}
+
       list ->
         values = Enum.flat_map(list, &elem(&1, 1))
         {:reply, values, ets}

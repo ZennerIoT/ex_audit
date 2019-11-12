@@ -1,5 +1,5 @@
 defmodule PatchTest do
-    use ExUnit.Case
+  use ExUnit.Case
 
   alias ExAudit.{Diff, Patch}
   doctest Patch

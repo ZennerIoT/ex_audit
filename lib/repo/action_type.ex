@@ -1,5 +1,5 @@
 defmodule ExAudit.Type.Action do
-  @behaviour Ecto.Type
+  use Ecto.Type
 
   @actions ~w[created updated deleted]a
 

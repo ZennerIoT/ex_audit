@@ -7,7 +7,17 @@ defmodule ExAudit.Diff do
   @type list_removal :: {:removed_from_list, index :: integer, term}
   @type list_change :: {:changed_in_list, index :: integer, changes}
   @type no_change :: :not_changed
-  @type changes :: addition | removal | change | list_addition | list_removal | list_change | no_change | primitive_change | %{any: changes} | [changes]
+  @type changes ::
+          addition
+          | removal
+          | change
+          | list_addition
+          | list_removal
+          | list_change
+          | no_change
+          | primitive_change
+          | %{any: changes}
+          | [changes]
 
   @undefined :"$undefined"
 
@@ -22,26 +32,30 @@ defmodule ExAudit.Diff do
   end
 
   def diff(%{} = a, %{} = b) do
-    all_keys = 
-      Map.keys(a) ++ Map.keys(b)
+    all_keys =
+      (Map.keys(a) ++ Map.keys(b))
       |> Enum.uniq()
 
-    changes = Enum.map(all_keys, fn key ->
-      value_a = Map.get(a, key, @undefined)
-      value_b = Map.get(b, key, @undefined)
+    changes =
+      Enum.map(all_keys, fn key ->
+        value_a = Map.get(a, key, @undefined)
+        value_b = Map.get(b, key, @undefined)
 
-      case {value_a, value_b} do
-        {a, a} -> 
-          nil
-        {@undefined, b} ->
-          {key, {:added, b}}
-        {a, @undefined} ->
-          {key, {:removed, a}}
-        {a, b} ->
-          {key, {:changed, diff(a, b)}}
-      end
-    end)
-    |> Enum.reject(&is_nil/1)
+        case {value_a, value_b} do
+          {a, a} ->
+            nil
+
+          {@undefined, b} ->
+            {key, {:added, b}}
+
+          {a, @undefined} ->
+            {key, {:removed, a}}
+
+          {a, b} ->
+            {key, {:changed, diff(a, b)}}
+        end
+      end)
+      |> Enum.reject(&is_nil/1)
 
     case length(changes) do
       0 -> :not_changed
@@ -50,25 +64,30 @@ defmodule ExAudit.Diff do
   end
 
   def diff(a, b) when is_list(a) and is_list(b) do
-    indexes = 0..(:erlang.max(length(a) - 1, length(b) - 1))
+    indexes = 0..:erlang.max(length(a) - 1, length(b) - 1)
 
-    changes = for i <- indexes, into: [] do
-      value_a = Enum.at(a, i, @undefined)
-      value_b = Enum.at(b, i, @undefined)
+    changes =
+      for i <- indexes, into: [] do
+        value_a = Enum.at(a, i, @undefined)
+        value_b = Enum.at(b, i, @undefined)
 
-      case {value_a, value_b} do
-        {a, a} -> 
-          nil
-        {@undefined, b} ->
-          {:added_to_list, i, b}
-        {a, @undefined} -> 
-          {:removed_from_list, i, a}
-        {a, b} ->
-          {:changed_in_list, i, diff(a, b)}
+        case {value_a, value_b} do
+          {a, a} ->
+            nil
+
+          {@undefined, b} ->
+            {:added_to_list, i, b}
+
+          {a, @undefined} ->
+            {:removed_from_list, i, a}
+
+          {a, b} ->
+            {:changed_in_list, i, diff(a, b)}
+        end
       end
-    end
 
     changes = Enum.reject(changes, &is_nil/1)
+
     case length(changes) do
       0 -> :not_changed
       _ -> changes
@@ -107,7 +126,7 @@ defmodule ExAudit.Diff do
 
   def reverse(changes) when is_list(changes) do
     changes
-    |> Enum.reverse
+    |> Enum.reverse()
     |> Enum.map(&reverse/1)
   end
 end
