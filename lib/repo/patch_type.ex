@@ -1,5 +1,5 @@
 defmodule ExAudit.Type.Patch do
-  @behaviour Ecto.Type
+  use Ecto.Type
 
   def cast(a), do: {:ok, a}
   def dump(patch), do: {:ok, :erlang.term_to_binary(patch)}

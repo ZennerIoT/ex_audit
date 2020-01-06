@@ -30,15 +30,18 @@ defimpl ExAudit.Tracker, for: Any do
     only = options[:only]
     except = options[:except]
 
-    extractor = cond do
-      only ->
-        quote(do: Map.take(struct, unquote(only)))
-      except ->
-        except = @ignored_fields ++ except
-        quote(do: Map.drop(struct, unquote(except)))
-      true ->
-        quote(do: Map.drop(struct, unquote(@ignored_fields)))
-    end
+    extractor =
+      cond do
+        only ->
+          quote(do: Map.take(struct, unquote(only)))
+
+        except ->
+          except = @ignored_fields ++ except
+          quote(do: Map.drop(struct, unquote(except)))
+
+        true ->
+          quote(do: Map.drop(struct, unquote(@ignored_fields)))
+      end
 
     quote do
       defimpl ExAudit.Tracker, for: unquote(module) do
