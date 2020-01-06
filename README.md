@@ -152,6 +152,9 @@ defmodule MyApp.Migrations.AddVersions do
       # for example, it's a good idea to track who did the change
       add :actor_id, references(:users, on_update: :update_all, on_delete: :nilify_all)
     end
+
+    # create this if you are going to have more than a hundred of thousands of versions
+    create index(:versions, [:entity_schema, :entity_id])
   end
 end
 ```
