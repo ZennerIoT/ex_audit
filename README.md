@@ -48,12 +48,12 @@ Add ex_audit to your list of dependencies:
 ```elixir
 def deps do
   [
-    {:ex_audit, "~> 0.7"}
+    {:ex_audit, "~> 0.8"}
   ]
 end
 ```
 
-For older ecto versions than 3.2, check out what to do in the [Ecto Versions](#ecto-versions) section.
+For older ecto versions than 3.3, check out what to do in the [Ecto Versions](#ecto-versions) section.
 
 You have to hook ExAudit to your repo, by replacing `Ecto.Repo` with `ExAudit.Repo`:
 
@@ -208,6 +208,8 @@ For ecto 3.1, use `{:ex_audit, "~> 0.6"}`
 For ecto 3.1.2 or higher, upgrade ecto to 3.2
 
 For ecto 3.2, use `{:ex_audit, "~> 0.7"}`
+
+For ecto 3.3, use `{:ex_audit, "~> 0.8"}`
 
 ## More
 
