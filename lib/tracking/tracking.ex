@@ -82,27 +82,38 @@ defmodule ExAudit.Tracking do
     end
   end
 
-  def find_assoc_deletion(module, struct, repo_opts) do
-    struct =
-      case struct do
-        %Ecto.Changeset{} -> Ecto.Changeset.apply_changes(struct)
-        _ -> struct
-      end
+  def find_assoc_deletion(module, struct, repo_opts, tracked_modules \\ [])
 
-    schema = struct.__struct__
+  def find_assoc_deletion(module, struct, repo_opts, tracked_modules) do
+    if struct.__struct__ in tracked_modules do
+      []
+    else
+      struct =
+        case struct do
+          %Ecto.Changeset{} -> Ecto.Changeset.apply_changes(struct)
+          _ -> struct
+        end
 
-    assocs =
-      schema.__schema__(:associations)
-      |> Enum.map(fn field -> {field, schema.__schema__(:association, field)} end)
-      |> Enum.filter(fn {_, opts} -> Map.get(opts, :on_delete) == :delete_all end)
+      schema = struct.__struct__
 
-    assocs
-    |> Enum.flat_map(fn {field, _opts} ->
-      root = module.all(Ecto.assoc(struct, field))
-      root ++ Enum.map(root, &find_assoc_deletion(module, &1, repo_opts))
-    end)
-    |> List.flatten()
-    |> Enum.flat_map(&compare_versions(:deleted, &1, %{}))
+      assocs =
+        schema.__schema__(:associations)
+        |> Enum.map(fn field -> {field, schema.__schema__(:association, field)} end)
+        |> Enum.filter(fn {_, opts} -> Map.get(opts, :on_delete) == :delete_all end)
+
+      assocs
+      |> Enum.flat_map(fn {field, _opts} ->
+        root = module.all(Ecto.assoc(struct, field))
+
+        root ++
+          Enum.map(
+            root,
+            &find_assoc_deletion(module, &1, repo_opts, tracked_modules ++ [struct.__struct__])
+          )
+      end)
+      |> List.flatten()
+      |> Enum.flat_map(&compare_versions(:deleted, &1, %{}))
+    end
   end
 
   def track_assoc_deletion(module, struct, opts) do
