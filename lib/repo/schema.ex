@@ -1,8 +1,35 @@
 defmodule ExAudit.Schema do
   def insert_all(module, name, schema_or_source, entries, opts) do
-    # TODO!
     opts = augment_opts(opts)
-    Ecto.Repo.Schema.insert_all(module, name, schema_or_source, entries, opts)
+
+    augment_transaction(module, fn ->
+      result =
+        Ecto.Repo.Schema.insert_all(
+          module,
+          name,
+          schema_or_source,
+          entries,
+          Keyword.put(opts, :returning, true)
+        )
+
+      case result do
+        {rows, changesets} when is_list(changesets) and rows > 0 ->
+          Enum.each(changesets, fn changeset ->
+            ExAudit.Tracking.track_change(
+              module,
+              :created,
+              schema_or_source,
+              changeset,
+              opts
+            )
+          end)
+
+        _ ->
+          :ok
+      end
+
+      result
+    end)
   end
 
   def insert(module, name, struct, opts) do
@@ -156,6 +183,7 @@ defmodule ExAudit.Schema do
       {{:ok, _} = ok, false} -> ok
       {{:error, _} = error, false} -> error
       {value, true} -> {:ok, value}
+      {{_, array} = value, false} when is_list(array) -> {:ok, value}
     end
   end
 
