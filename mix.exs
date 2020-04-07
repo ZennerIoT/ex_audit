@@ -49,8 +49,8 @@ defmodule ExAudit.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ecto, ">= 3.2.0"},
-      {:ecto_sql, ">= 3.2.0"},
+      {:ecto, github: "elixir-ecto/ecto", ref: "fc9061ac364ff70f20e62b2b1a5f6dd7e401c3a2", override: true},
+      {:ecto_sql, github: "elixir-ecto/ecto_sql", ref: "ec58d3e89d52e1be4a84912bc45a6171e5f3aec8"},
       {:postgrex, ">= 0.15.0", only: :test},
       {:excoveralls, "~> 0.7", only: :test},
       {:ex_doc, "~> 0.21", runtime: false, only: :dev}
