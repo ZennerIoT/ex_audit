@@ -159,7 +159,7 @@ defmodule ExAudit.Schema do
     end
   end
 
-  # Gets the custom data from the ets store that stores it by PID, and adds
+  # Gets the custom data from the process dictionary, and adds
   # it to the list of custom data from the options list
   #
   # This is done so it works inside a transaction (which happens when ecto mutates assocs at the same time)
@@ -168,10 +168,7 @@ defmodule ExAudit.Schema do
     opts
     |> Keyword.put_new(:ex_audit_custom, [])
     |> Keyword.update(:ex_audit_custom, [], fn custom_fields ->
-      case Process.whereis(ExAudit.CustomData) do
-        nil -> []
-        _ -> ExAudit.CustomData.get()
-      end ++ custom_fields
+      Process.get(:ex_audit_custom, []) ++ custom_fields
     end)
   end
 end

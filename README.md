@@ -188,8 +188,8 @@ defmodule MyApp.ExAuditPlug do
 end
 ```
 
-In the background, ExAudit.track will remember the PID it was called from and attaches the passed data to that
-PID. In most cases, the conn process will call the Repo functions, so ExAudit can get the data from that PID again deeper
+In the background, `ExAudit.track/1` will store the data you provided in the process dictionary.
+In most cases, the conn process will call the Repo functions, so ExAudit can get the data from that PID again deeper
 in the plug tree.
 
 In some cases where it is not possible to call the Repo function from the conn process, you have to pass the
