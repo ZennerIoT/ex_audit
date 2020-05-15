@@ -31,6 +31,10 @@ defmodule ExAudit.Diff do
     :not_changed
   end
 
+  def diff(%Decimal{} = a, %Decimal{} = b) do
+    {:primitive_change, a, b}
+  end
+
   def diff(%{} = a, %{} = b) do
     all_keys =
       (Map.keys(a) ++ Map.keys(b))

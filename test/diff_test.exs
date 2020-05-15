@@ -74,4 +74,14 @@ defmodule DiffTest do
              baz: {:removed, 1}
            }
   end
+
+  test "Decimals are treated as primitives" do
+    val1 = Decimal.new("100")
+    val2 = Decimal.new("2000.00")
+
+    a = %{foo: val1}
+    b = %{foo: val2}
+
+    assert %{foo: {:changed, {:primitive_change, val1, val2}}} == Diff.diff(a, b)
+  end
 end

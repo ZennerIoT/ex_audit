@@ -3,7 +3,7 @@ defmodule AssocTest do
 
   import Ecto.Query
 
-  alias ExAudit.Test.{Repo, Version, BlogPost, Comment, Util, UserGroup}
+  alias ExAudit.Test.{Repo, Version, BlogPost, Comment, Util, User, UserGroup}
 
   test "comment lifecycle tracked" do
     user = Util.create_user()
@@ -27,6 +27,23 @@ defmodule AssocTest do
     [%{actor_id: actor_id}] = comment_history = Repo.history(comment)
     assert length(comment_history) == 1
     assert actor_id == user.id
+  end
+
+  test "decimals are treated as primitives" do
+    user = Util.create_user()
+    old_worth = user.worth
+    new_worth = Decimal.new("2000.00")
+
+    changeset = User.changeset(user, %{worth: new_worth})
+    {:ok, user} = Repo.update(changeset)
+
+    [version | _] = Repo.history(user)
+
+    assert %{
+             patch: %{
+               worth: {:changed, {:primitive_change, ^old_worth, ^new_worth}}
+             }
+           } = version
   end
 
   test "should track cascading deletions (before they happen)" do
