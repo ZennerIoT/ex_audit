@@ -19,4 +19,7 @@ config :ex_audit,
     ExAudit.Test.BlogPost,
     ExAudit.Test.BlogPost.Section,
     ExAudit.Test.Comment
+  ],
+  primitive_structs: [
+    Decimal
   ]

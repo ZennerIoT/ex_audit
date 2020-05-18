@@ -31,8 +31,12 @@ defmodule ExAudit.Diff do
     :not_changed
   end
 
-  def diff(%Decimal{} = a, %Decimal{} = b) do
-    {:primitive_change, a, b}
+  def diff(a, b) when is_struct(a) and is_struct(b) do
+    if primitive_struct?(a) and primitive_struct?(b) do
+      {:primitive_change, a, b}
+    else
+      diff(Map.from_struct(a), Map.from_struct(b))
+    end
   end
 
   def diff(%{} = a, %{} = b) do
@@ -133,4 +137,12 @@ defmodule ExAudit.Diff do
     |> Enum.reverse()
     |> Enum.map(&reverse/1)
   end
+
+  defp primitive_struct?(map) when is_struct(map) do
+    primitive_structs = Application.get_env(:ex_audit, :primitive_structs, [])
+
+    map.__struct__ in primitive_structs
+  end
+
+  defp primitive_struct?(_), do: false
 end
