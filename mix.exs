@@ -49,6 +49,7 @@ defmodule ExAudit.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:decimal, "~> 1.8.1"},
       {:ecto, "~> 3.4"},
       {:ecto_sql, "~> 3.4"},
       {:postgrex, "~> 0.15", only: :test},

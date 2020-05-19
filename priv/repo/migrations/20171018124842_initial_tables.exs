@@ -5,6 +5,7 @@ defmodule ExAudit.Test.Repo.Migrations.InitialTables do
     create table(:users) do
       add(:name, :string)
       add(:email, :string)
+      add(:worth, :decimal)
 
       timestamps(type: :utc_datetime)
     end

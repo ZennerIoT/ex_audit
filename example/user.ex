@@ -7,6 +7,7 @@ defmodule ExAudit.Test.User do
   schema "users" do
     field(:email, :string)
     field(:name, :string)
+    field(:worth, :decimal)
 
     field(:transient_field, :integer)
 
@@ -17,6 +18,6 @@ defmodule ExAudit.Test.User do
 
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:email, :name])
+    |> cast(params, [:email, :name, :worth])
   end
 end
