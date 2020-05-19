@@ -74,4 +74,14 @@ defmodule DiffTest do
              baz: {:removed, 1}
            }
   end
+
+  test "structs configured as primitives are treated as primitives" do
+    val1 = Date.new(2020, 1, 1)
+    val2 = Date.new(2020, 2, 2)
+
+    a = %{foo: val1}
+    b = %{foo: val2}
+
+    assert %{foo: {:changed, {:primitive_change, val1, val2}}} == Diff.diff(a, b)
+  end
 end

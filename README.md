@@ -83,6 +83,36 @@ config :ex_audit,
   ]
 ```
 
+Optionally, you can tell ExAudit to treat certain structs as primitives and not record internal changes for the 
+struct. Add these under the key `:primitive_structs` in your config. So for example, if you configured `Date` to be treated as a primitive:
+
+```elixir
+config :ex_audit,
+  ecto_repos: [ExAudit.Test.Repo],
+  version_schema: ExAudit.Test.Version,
+  tracked_schemas: [
+    ExAudit.Test.User,
+    ExAudit.Test.BlogPost,
+    ExAudit.Test.BlogPost.Section,
+    ExAudit.Test.Comment
+  ],
+  primitive_structs: [
+    Date
+  ]
+```
+
+then the patch would record the entire Date struct as a change:
+
+```elixir
+{:primitive_change, ~D[2000-01-01], ~D[2000-01-18]}
+```
+
+instead of descending into the struct to find the individual part that changed:
+
+```elixir
+{:changed, %{day: {:changed, {:primitive_change, 1, 18}}}}
+```
+
 ### Version Schema and Migration
 
 You need to copy the migration and the schema module for the versions table. This allows you to add custom fields
