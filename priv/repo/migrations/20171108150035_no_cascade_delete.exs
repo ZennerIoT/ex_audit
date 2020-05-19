@@ -3,8 +3,8 @@ defmodule ExAudit.Test.Repo.Migrations.NoCascadeDelete do
 
   def change do
     create table(:user_groups) do
-      add :name, :string
-      add :user_id, references(:users)
+      add(:name, :string)
+      add(:user_id, references(:users))
     end
   end
 end

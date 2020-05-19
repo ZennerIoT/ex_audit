@@ -3,7 +3,7 @@ defmodule ExAudit.Test.Repo.Migrations.TransientField do
 
   def change do
     alter table(:users) do
-      add :transient_field, :integer
+      add(:transient_field, :integer)
     end
   end
 end

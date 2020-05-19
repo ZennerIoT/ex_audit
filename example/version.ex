@@ -3,20 +3,21 @@ defmodule ExAudit.Test.Version do
   import Ecto.Changeset
 
   schema "versions" do
-    field :patch, ExAudit.Type.Patch
-    field :entity_id, :integer
-    field :entity_schema, ExAudit.Type.Schema
-    field :action, ExAudit.Type.Action
-    field :recorded_at, :utc_datetime_usec
-    field :rollback, :boolean, default: false
+    field(:patch, ExAudit.Type.Patch)
+    field(:entity_id, :integer)
+    field(:entity_schema, ExAudit.Type.Schema)
+    field(:action, ExAudit.Type.Action)
+    field(:recorded_at, :utc_datetime_usec)
+    field(:rollback, :boolean, default: false)
 
     # custom fields
-    belongs_to :actor, ExAudit.Test.User
+    belongs_to(:actor, ExAudit.Test.User)
   end
 
   def changeset(struct, params \\ %{}) do
     struct
     |> cast(params, [:patch, :entity_id, :entity_schema, :action, :recorded_at, :rollback])
-    |> cast(params, [:actor_id]) # custom fields
+    # custom fields
+    |> cast(params, [:actor_id])
   end
 end
