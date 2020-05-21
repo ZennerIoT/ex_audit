@@ -95,6 +95,12 @@ defmodule ExAuditTest do
            }
   end
 
+  test "latest handles invalid input" do
+    assert_raise ArgumentError, fn ->
+      Repo.latest(%User{})
+    end
+  end
+
   test "should track custom data" do
     user = Repo.insert!(User.changeset(%User{}, %{name: "Admin", email: "admin@example.com"}))
 

@@ -92,6 +92,9 @@ defmodule ExAudit.Queryable do
             where: v.entity_id == ^id,
             where: v.entity_schema == ^struct
           )
+
+        _ ->
+          raise ArgumentError, "Must pass an Ecto Schema struct with an id"
       end
 
     Ecto.Repo.Queryable.one(module, query, [])
