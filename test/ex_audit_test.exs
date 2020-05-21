@@ -70,6 +70,31 @@ defmodule ExAuditTest do
     assert length(versions) == 3
   end
 
+  test "can get latest revision" do
+    params = %{
+      name: "Ben Munat",
+      email: "foo@bar.com"
+    }
+
+    changeset = User.changeset(%User{}, params)
+
+    {:ok, user} = Repo.insert(changeset)
+
+    params = %{
+      email: "real@email.com"
+    }
+
+    changeset = User.changeset(user, params)
+
+    {:ok, user} = Repo.update(changeset)
+
+    assert %Version{} = latest = Repo.latest(user)
+
+    assert latest.patch == %{
+             email: {:changed, {:primitive_change, "foo@bar.com", "real@email.com"}}
+           }
+  end
+
   test "should track custom data" do
     user = Repo.insert!(User.changeset(%User{}, %{name: "Admin", email: "admin@example.com"}))
 
