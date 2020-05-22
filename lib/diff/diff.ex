@@ -31,8 +31,8 @@ defmodule ExAudit.Diff do
     :not_changed
   end
 
-  def diff(a, b) when is_struct(a) and is_struct(b) do
-    if primitive_struct?(a) and primitive_struct?(b) do
+  def diff(%{__struct__: a_struct} = a, %{__struct__: b_struct} = b) do
+    if primitive_struct?(a_struct) and primitive_struct?(b_struct) do
       {:primitive_change, a, b}
     else
       diff(Map.from_struct(a), Map.from_struct(b))
@@ -140,11 +140,9 @@ defmodule ExAudit.Diff do
 
   ## PRIVATE
 
-  defp primitive_struct?(map) when is_struct(map) do
+  defp primitive_struct?(type) do
     primitive_structs = Application.get_env(:ex_audit, :primitive_structs, [])
 
-    map.__struct__ in primitive_structs
+    type in primitive_structs
   end
-
-  defp primitive_struct?(_), do: false
 end
