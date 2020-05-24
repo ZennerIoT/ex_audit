@@ -3,7 +3,7 @@ defmodule AssocTest do
 
   import Ecto.Query
 
-  alias ExAudit.Test.{Repo, Version, BlogPost, Comment, Util, UserGroup}
+  alias ExAudit.Test.{Repo, Version, BlogPost, Comment, Util, User, UserGroup}
 
   test "comment lifecycle tracked" do
     user = Util.create_user()
@@ -27,6 +27,26 @@ defmodule AssocTest do
     [%{actor_id: actor_id}] = comment_history = Repo.history(comment)
     assert length(comment_history) == 1
     assert actor_id == user.id
+  end
+
+  test "structs configured as primitives are treated as primitives" do
+    {:ok, old_date} = Date.new(2000, 1, 1)
+    params = %{name: "Bob", email: "foo@bar.com", birthday: old_date}
+    changeset = User.changeset(%User{}, params)
+    {:ok, user} = Repo.insert(changeset)
+
+    new_date = Date.add(old_date, 17)
+    params = %{birthday: new_date}
+    changeset = User.changeset(user, params)
+    {:ok, user} = Repo.update(changeset)
+
+    [version | _] = Repo.history(user)
+
+    assert %{
+             patch: %{
+               birthday: {:changed, {:primitive_change, ^old_date, ^new_date}}
+             }
+           } = version
   end
 
   test "should track cascading deletions (before they happen)" do

@@ -31,6 +31,14 @@ defmodule ExAudit.Diff do
     :not_changed
   end
 
+  def diff(%{__struct__: a_struct} = a, %{__struct__: b_struct} = b) do
+    if primitive_struct?(a_struct) and primitive_struct?(b_struct) do
+      {:primitive_change, a, b}
+    else
+      diff(Map.from_struct(a), Map.from_struct(b))
+    end
+  end
+
   def diff(%{} = a, %{} = b) do
     all_keys =
       (Map.keys(a) ++ Map.keys(b))
@@ -128,5 +136,13 @@ defmodule ExAudit.Diff do
     changes
     |> Enum.reverse()
     |> Enum.map(&reverse/1)
+  end
+
+  ## PRIVATE
+
+  defp primitive_struct?(type) do
+    primitive_structs = Application.get_env(:ex_audit, :primitive_structs, [])
+
+    type in primitive_structs
   end
 end
