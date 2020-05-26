@@ -30,6 +30,7 @@ All changes to the database made with these functions will automatically be trac
 Also, new functions are added to the repository:
 
 - `history/2`: lists all versions of the given struct ordered from oldest to newest
+- `latest/`: gets the latest version of the given struct
 - `revert/2`: rolls the referenced entity back to the state it was before the given version
   was changed
 
