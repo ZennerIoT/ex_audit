@@ -58,7 +58,7 @@ defmodule ExAudit.Repo do
       )
 
       defp tracked?(struct_or_changeset) do
-        tracked_schemas = Application.get_env(:ex_audit, :tracked_schemas)
+        tracked_schemas = Application.get_env(:ex_audit, :tracked_schemas, [])
 
         schema =
           case struct_or_changeset do
