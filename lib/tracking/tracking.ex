@@ -112,7 +112,7 @@ defmodule ExAudit.Tracking do
   end
 
   defp tracked_schemas do
-    Application.get_env(:ex_audit, :tracked_schemas)
+    Application.get_env(:ex_audit, :tracked_schemas, [])
   end
 
   defp version_schema do
