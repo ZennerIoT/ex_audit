@@ -57,7 +57,7 @@ defmodule ExAudit.Repo do
         delete!: 2
       )
 
-      defp tracked?(struct_or_changeset) do
+      def tracked?(struct_or_changeset) do
         tracked_schemas = Application.get_env(:ex_audit, :tracked_schemas, [])
 
         schema =
@@ -73,6 +73,8 @@ defmodule ExAudit.Repo do
       end
 
       @compile {:inline, tracked?: 1}
+
+      defoverridable(tracked?: 1)
 
       def insert(struct, opts) do
         if tracked?(struct) do
