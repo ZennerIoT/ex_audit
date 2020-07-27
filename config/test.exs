@@ -12,7 +12,8 @@ config :ex_audit, ExAudit.Test.Repo,
 config :logger, level: :info
 
 config :ex_audit,
-  ecto_repos: %{
+  ecto_repos: [ExAudit.Test.Repo],
+  ecto_repos_schemas: %{
     ExAudit.Test.Repo => %{
       version_schema: ExAudit.Test.Version,
       tracked_schemas: [
