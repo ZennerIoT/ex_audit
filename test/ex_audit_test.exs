@@ -247,7 +247,7 @@ defmodule ExAuditTest do
   end
 
   test "will not crash the caller process if the tracking " do
-    original = Application.get_env(:ex_audit, :ecto_repos)
+    original = Application.get_env(:ex_audit, :ecto_repos_schemas)
     Application.put_env(:ex_audit, :ecto_repos, :crash)
 
     ExUnit.Callbacks.on_exit(fn ->

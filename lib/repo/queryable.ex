@@ -172,6 +172,6 @@ defmodule ExAudit.Queryable do
   defp reverse_action(:deleted), do: :created
 
   defp version_schema(repo_module) do
-    Application.get_env(:ex_audit, :ecto_repos) |> get_in([repo_module, :version_schema])
+    Application.get_env(:ex_audit, :ecto_repos_schemas) |> get_in([repo_module, :version_schema])
   end
 end
