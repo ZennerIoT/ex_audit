@@ -78,6 +78,11 @@ defmodule ExAudit.Tracking do
 
       _ ->
         opts = Keyword.drop(opts, [:on_conflict, :conflict_target])
+        notification_module = Application.get_env(:ex_audit, :notification_module)
+        notification_function = Application.get_env(:ex_audit, :notification_function)
+        if Kernel.function_exported?(notification_module, notification_function, 1) do
+          apply(notification_module, notification_function, changes)
+        end
         module.insert_all(version_schema(), changes, opts)
     end
   end
