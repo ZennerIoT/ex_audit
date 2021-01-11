@@ -63,16 +63,11 @@ defmodule ExAudit.Tracking do
     now = DateTime.utc_now()
     empty_version_schema = struct(version_schema(), %{})
 
-    custom_fields =
-      Keyword.get(opts, :ex_audit_custom, [])
-      |> Enum.into(%{})
-
     changes =
       Enum.map(changes, fn change ->
-        change =
-          change
-          |> Map.put(:recorded_at, now)
-          |> Map.merge(custom_fields)
+        change = Map.put(change, :recorded_at, now)
+        custom_fields = build_custom_fields(change, opts)
+        change = Map.merge(change, custom_fields)
 
         version_schema()
         |> apply(:changeset, [empty_version_schema, change])
@@ -118,11 +113,29 @@ defmodule ExAudit.Tracking do
     insert_versions(module, deleted_structs, opts)
   end
 
+  def noop(_changes) do
+    []
+  end
+
+  defp build_custom_fields(change, opts) do
+    {ex_audit_mod, ex_audit_fun, ex_audit_init_args} = ex_audit_custom()
+    extra_custom_fields = apply(ex_audit_mod, ex_audit_fun, ex_audit_init_args ++ [change])
+
+    opts
+    |> Keyword.get(:ex_audit_custom, [])
+    |> Enum.into(%{})
+    |> Map.merge(Enum.into(extra_custom_fields, %{}))
+  end
+
   defp tracked_schemas do
     Application.get_env(:ex_audit, :tracked_schemas, [])
   end
 
   defp version_schema do
     Application.get_env(:ex_audit, :version_schema)
+  end
+
+  defp ex_audit_custom do
+    Application.get_env(:ex_audit, :ex_audit_custom_callback, {__MODULE__, :noop, []})
   end
 end

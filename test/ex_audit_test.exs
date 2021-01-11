@@ -6,6 +6,16 @@ defmodule ExAuditTest do
 
   alias ExAudit.Test.{Repo, User, Version, BlogPost, Util}
 
+  def ex_audit_callback(change) do
+    case Map.get(change.patch, :author_id) do
+      {:added, author_id} ->
+        [actor_id: author_id]
+
+      _ ->
+        []
+    end
+  end
+
   test "should document lifecycle of an entity" do
     params = %{
       name: "Moritz Schmale",
@@ -80,6 +90,31 @@ defmodule ExAuditTest do
       })
 
     {:ok, blog_post} = Repo.insert(changeset, ex_audit_custom: [actor_id: user.id])
+
+    version =
+      Repo.one(
+        from(v in Version,
+          where: v.entity_id == ^blog_post.id,
+          where: v.entity_schema == ^BlogPost,
+          where: v.action == ^:created
+        )
+      )
+
+    assert version.actor_id == user.id
+  end
+
+  test "ex_audit_custom can be set from callback" do
+    Application.put_env(:ex_audit, :ex_audit_custom_callback, {__MODULE__, :ex_audit_callback, []})
+
+    user = Repo.insert!(User.changeset(%User{}, %{name: "Admin", email: "admin@example.com"}))
+
+    changeset =
+      BlogPost.changeset(%BlogPost{}, %{
+        author_id: user.id,
+        title: "My First Post"
+      })
+
+    {:ok, blog_post} = Repo.insert(changeset)
 
     version =
       Repo.one(
