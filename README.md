@@ -83,7 +83,7 @@ config :ex_audit,
   ]
 ```
 
-Optionally, you can tell ExAudit to treat certain structs as primitives and not record internal changes for the 
+Optionally, you can tell ExAudit to treat certain structs as primitives and not record internal changes for the
 struct. Add these under the key `:primitive_structs` in your config. So for example, if you configured `Date` to be treated as a primitive:
 
 ```elixir
@@ -139,7 +139,7 @@ defmodule MyApp.Version do
     field :action, ExAudit.Type.Action
 
     # when has this happened
-    field :recorded_at, :utc_datetime
+    field :recorded_at, :utc_datetime_usec
 
     # was this change part of a rollback?
     field :rollback, :boolean, default: false
