@@ -60,7 +60,7 @@ defmodule ExAudit.Tracking do
   end
 
   def insert_versions(module, changes, opts) do
-    now = DateTime.utc_now()
+    now = DateTime.utc_now() |> with_precision()
 
     custom_fields =
       Keyword.get(opts, :ex_audit_custom, [])
@@ -109,6 +109,13 @@ defmodule ExAudit.Tracking do
     deleted_structs = find_assoc_deletion(module, struct, opts)
 
     insert_versions(module, deleted_structs, opts)
+  end
+
+  defp with_precision(date) do
+    case precision = Application.get_env(:ex_audit, :precision) do
+      nil -> date
+      precision -> DateTime.truncate(date, precision)
+    end
   end
 
   defp tracked_schemas do
