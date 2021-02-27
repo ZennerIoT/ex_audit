@@ -11,7 +11,8 @@ defmodule ExAudit.Repo do
     insert!: 2,
     update!: 2,
     insert_or_update!: 2,
-    delete!: 2
+    delete!: 2,
+    insert_all: 3
 
   If the given struct or changeset is not tracked then the original function from Ecto.Repo is
   executed, i.e., the functions are marked as overridable and the overrided implementations
@@ -54,7 +55,8 @@ defmodule ExAudit.Repo do
         insert!: 2,
         update!: 2,
         insert_or_update!: 2,
-        delete!: 2
+        delete!: 2,
+        insert_all: 3
       )
 
       @doc """
@@ -82,12 +84,17 @@ defmodule ExAudit.Repo do
             %Ecto.Changeset{} = changeset ->
               Map.get(changeset.data, :__struct__)
 
+            struct when is_struct(struct) ->
+              Map.get(struct, :__struct__)
+
             _ ->
-              Map.get(struct_or_changeset, :__struct__)
+              struct_or_changeset
           end
 
         schema in tracked_schemas
       end
+
+      @adapters_with_return [Ecto.Adapters.Postgres, Ecto.Adapters.Tds]
 
       @compile {:inline, tracked?: 1}
 
@@ -105,6 +112,24 @@ defmodule ExAudit.Repo do
           super(struct, opts)
         end
       end
+
+      def insert_all(schema_or_source, entries, opts) do
+        repo = get_dynamic_repo()
+
+        if tracked?(schema_or_source) && has_return_opts?(repo) do
+          ExAudit.Schema.insert_all(
+            __MODULE__,
+            repo,
+            schema_or_source,
+            entries,
+            opts
+          )
+        else
+          super(schema_or_source, entries, opts)
+        end
+      end
+
+      defp has_return_opts?(repo), do: repo.__adapter__() in @adapters_with_return
 
       def update(struct, opts) do
         if tracked?(struct) do
