@@ -245,4 +245,30 @@ defmodule ExAuditTest do
 
     assert 2 = Repo.aggregate(query, :count, :id)
   end
+
+  describe "history/2" do
+    setup do
+      params = %{
+        name: "Foo",
+        email: "foo@bar.com"
+      }
+
+      changeset = User.changeset(%User{}, params)
+
+      {:ok, user} = Repo.insert(changeset)
+
+      %{user: user}
+    end
+
+    test "accepts the option limit", %{user: user} do
+      for n <- [1, 2, 3, 4] do
+        changeset = User.changeset(user, %{name: "Update #{n}"})
+
+        Repo.update(changeset)
+      end
+
+      assert user |> Repo.history() |> Enum.count() == 5
+      assert user |> Repo.history(limit: 1) |> Enum.count() == 1
+    end
+  end
 end

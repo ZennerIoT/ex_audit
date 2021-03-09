@@ -21,7 +21,8 @@ defmodule ExAudit.Queryable do
     query =
       from(
         v in version_schema(),
-        order_by: [desc: :recorded_at]
+        order_by: [desc: :recorded_at],
+        limit: ^Keyword.get(opts, :limit)
       )
 
     # TODO what do when we get a query
