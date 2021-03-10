@@ -205,6 +205,10 @@ defmodule ExAudit.Repo do
       def revert(version, opts \\ []) do
         ExAudit.Queryable.revert(__MODULE__, version, opts)
       end
+
+      def latest(struct) do
+        ExAudit.Queryable.latest(__MODULE__, struct)
+      end
     end
   end
 
@@ -220,6 +224,11 @@ defmodule ExAudit.Repo do
      `false` by default.
   """
   @callback history(struct, opts :: list) :: [version :: struct]
+
+  @doc """
+  Loads the most recent version record for the given struct.
+  """
+  @callback latest(struct) :: version :: struct
 
   @doc """
   Undoes the changes made in the given version, as well as all of the following versions.

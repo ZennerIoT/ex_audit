@@ -74,6 +74,32 @@ defmodule ExAudit.Queryable do
     end
   end
 
+  def latest(module, struct) do
+    import Ecto.Query
+
+    query =
+      from(
+        v in version_schema(),
+        order_by: [desc: :recorded_at],
+        limit: 1
+      )
+
+    query =
+      case struct do
+        %{__struct__: struct, id: id} when nil not in [struct, id] ->
+          from(
+            v in query,
+            where: v.entity_id == ^id,
+            where: v.entity_schema == ^struct
+          )
+
+        _ ->
+          raise ArgumentError, "Must pass an Ecto Schema struct with an id"
+      end
+
+    Ecto.Repo.Queryable.one(module, query, [])
+  end
+
   @drop_fields [:__meta__, :__struct__]
 
   def revert(module, version, opts) do
