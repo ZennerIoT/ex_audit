@@ -57,7 +57,24 @@ defmodule ExAudit.Repo do
         delete!: 2
       )
 
-      defp tracked?(struct_or_changeset) do
+      @doc """
+        Decides based on config `tracked_schema` wether the current schema is tracked or not.
+        Can be overwritten for custom tracking logic.
+
+        E.g.
+        ```
+          def tracked?(struct_or_schema) do
+            tracked? =
+              case Process.get(__MODULE__) do
+                %{tracked?: true} -> true
+                _ -> false
+              end
+
+            tracked? && super(struct_or_schema)
+          end
+        ```
+      """
+      def tracked?(struct_or_changeset) do
         tracked_schemas = Application.get_env(:ex_audit, :tracked_schemas, [])
 
         schema =
@@ -73,6 +90,8 @@ defmodule ExAudit.Repo do
       end
 
       @compile {:inline, tracked?: 1}
+
+      defoverridable(tracked?: 1)
 
       def insert(struct, opts) do
         if tracked?(struct) do
