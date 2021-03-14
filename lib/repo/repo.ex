@@ -179,12 +179,17 @@ defmodule ExAudit.Repo do
       end
 
       # ExAudit.Repo behaviour
+
       def history(struct, opts \\ []) do
         ExAudit.Queryable.history(__MODULE__, struct, opts)
       end
 
       def revert(version, opts \\ []) do
         ExAudit.Queryable.revert(__MODULE__, version, opts)
+      end
+
+      def history_query(struct) do
+        ExAudit.Queryable.history_query(struct)
       end
     end
   end
@@ -201,6 +206,12 @@ defmodule ExAudit.Repo do
      `false` by default.
   """
   @callback history(struct, opts :: list) :: [version :: struct]
+
+  @doc """
+  Returns a query that gathers the version history for the given struct, ordered by the time the changes
+  happened from newest to oldest.
+  """
+  @callback history_query(struct) :: Ecto.Query.t()
 
   @doc """
   Undoes the changes made in the given version, as well as all of the following versions.
