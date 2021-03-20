@@ -1,5 +1,6 @@
 defmodule PrecisionTest do
-  use ExUnit.Case
+  use ExUnit.Case,
+    async: false
 
   import Ecto.Query
 
