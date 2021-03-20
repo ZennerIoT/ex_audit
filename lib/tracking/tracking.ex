@@ -112,7 +112,7 @@ defmodule ExAudit.Tracking do
   end
 
   defp with_precision(date) do
-    case precision = Application.get_env(:ex_audit, :precision) do
+    case Application.get_env(:ex_audit, :precision) do
       nil -> date
       precision -> DateTime.truncate(date, precision)
     end
