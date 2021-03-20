@@ -113,6 +113,17 @@ instead of descending into the struct to find the individual part that changed:
 {:changed, %{day: {:changed, {:primitive_change, 1, 18}}}}
 ```
 
+### Precision in the timestamp
+
+When you are generating the tables of *ex_audit*, in some cases, the precision in the fields are in `:millisecond`, in such case you can change the precision of the field.
+
+```elixir
+config :ex_audit,
+  # ...
+  precision: :millisecond, # :microsecond is default
+  # ...
+```
+
 ### Version Schema and Migration
 
 You need to copy the migration and the schema module for the versions table. This allows you to add custom fields
