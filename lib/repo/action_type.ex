@@ -1,6 +1,8 @@
 defmodule ExAudit.Type.Action do
   use Ecto.Type
 
+  @type t() :: atom()
+
   @actions ~w[created updated deleted]a
 
   for action <- @actions do
