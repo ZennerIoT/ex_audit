@@ -1,7 +1,7 @@
 defmodule ExAudit.Type.Action do
   use Ecto.Type
 
-  @type t() :: atom()
+  @type t() :: :created | :updated | :deleted
 
   @actions ~w[created updated deleted]a
 

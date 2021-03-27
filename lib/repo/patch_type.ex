@@ -1,7 +1,7 @@
 defmodule ExAudit.Type.Patch do
   use Ecto.Type
 
-  @type t() :: map()
+  @type t() :: ExAudit.Diff.changes()
 
   def cast(a), do: {:ok, a}
   def dump(patch), do: {:ok, :erlang.term_to_binary(patch)}
