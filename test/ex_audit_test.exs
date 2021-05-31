@@ -104,7 +104,11 @@ defmodule ExAuditTest do
   end
 
   test "ex_audit_custom can be set from callback" do
-    Application.put_env(:ex_audit, :ex_audit_custom_callback, {__MODULE__, :ex_audit_callback, []})
+    Application.put_env(
+      :ex_audit,
+      :ex_audit_custom_callback,
+      {__MODULE__, :ex_audit_callback, []}
+    )
 
     user = Repo.insert!(User.changeset(%User{}, %{name: "Admin", email: "admin@example.com"}))
 

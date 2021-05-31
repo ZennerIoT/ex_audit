@@ -54,7 +54,8 @@ defmodule ExAudit.Mixfile do
       {:postgrex, "~> 0.15", only: :test},
       {:excoveralls, "~> 0.7", only: :test},
       {:ex_doc, ">= 0.0.0", runtime: false, only: :dev},
-      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false}
+      {:mix_test_watch, "~> 1.0", only: :dev, runtime: false},
+      {:telemetry, "~> 0.4"}
     ]
   end
 end
