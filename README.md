@@ -246,10 +246,6 @@ Examples for data you might want to track additionally:
 
 ## Telemetry Events
 
-### `[:ex_audit, :init]`
-
-An event emitted when `ExAudit.Supervisor` is starting.
-
 ### `[:ex_audit, :insert_event]`
 
 An event emitted before new version is inserted.

@@ -8,8 +8,6 @@ defmodule ExAudit do
       worker(ExAudit.CustomData, [])
     ]
 
-    :telemetry.execute([:ex_audit, :init], %{system_time: System.system_time()})
-
     opts = [strategy: :one_for_one, name: ExAudit.Supervisor]
     Supervisor.start_link(children, opts)
   end
