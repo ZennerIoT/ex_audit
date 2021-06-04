@@ -85,7 +85,7 @@ defmodule ExAudit.Tracking do
           :telemetry.execute(
             [:ex_audit, :insert_version],
             %{system_time: System.system_time()},
-            %{schema: change.entity_schema, change: change}
+            change
           )
         end)
 

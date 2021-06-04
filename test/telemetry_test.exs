@@ -20,10 +20,10 @@ defmodule ExAudit.TelemetryTest do
 
     assert_receive [:ex_audit, :insert_version], 1_000
     assert_receive %{system_time: _time}, 1_000
-    assert_receive %{change: change, schema: User}, 1_000
-    assert change.action == :created
-    assert change.entity_id == user.id
-    assert change.entity_schema == User
-    assert is_map(change.patch)
+
+    assert_receive %{action: :created, entity_id: entity_id, entity_schema: User, patch: patch},
+                   1_000
+
+    assert is_map(patch)
   end
 end
