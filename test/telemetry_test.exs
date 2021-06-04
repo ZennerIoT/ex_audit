@@ -18,12 +18,13 @@ defmodule ExAudit.TelemetryTest do
 
     user = Repo.insert!(User.changeset(%User{}, %{name: "Admin", email: "admin@example.com"}))
 
-    assert_receive [:ex_audit, :insert_version], 1_000
+    assert_received [:ex_audit, :insert_version], 1_000
     assert_receive %{system_time: _time}, 1_000
 
     assert_receive %{action: :created, entity_id: entity_id, entity_schema: User, patch: patch},
                    1_000
 
+    assert entity_id == user.id
     assert is_map(patch)
   end
 end

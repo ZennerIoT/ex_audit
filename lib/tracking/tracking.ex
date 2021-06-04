@@ -81,6 +81,8 @@ defmodule ExAudit.Tracking do
       _ ->
         opts = Keyword.drop(opts, [:on_conflict, :conflict_target])
 
+        res = module.insert_all(version_schema(), changes, opts)
+
         Enum.each(changes, fn change ->
           :telemetry.execute(
             [:ex_audit, :insert_version],
@@ -89,7 +91,7 @@ defmodule ExAudit.Tracking do
           )
         end)
 
-        module.insert_all(version_schema(), changes, opts)
+        res
     end
   end
 
