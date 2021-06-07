@@ -79,19 +79,22 @@ defmodule ExAudit.Tracking do
         :ok
 
       _ ->
-        opts = Keyword.drop(opts, [:on_conflict, :conflict_target])
+        opts =
+          opts
+          |> Keyword.drop([:on_conflict, :conflict_target])
+          |> Keyword.merge([returning: true])
 
-        res = module.insert_all(version_schema(), changes, opts)
+        {_, versions} = result = module.insert_all(version_schema(), changes, opts)
 
-        Enum.each(changes, fn change ->
+        Enum.each(versions, fn version ->
           :telemetry.execute(
             [:ex_audit, :insert_version],
             %{system_time: System.system_time()},
-            change
+            version
           )
         end)
 
-        res
+        result
     end
   end
 
