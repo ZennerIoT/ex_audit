@@ -59,6 +59,11 @@ defmodule ExAudit.Repo do
         adapter.checkout(meta, opts, fun)
       end
 
+      def checked_out? do
+        {adapter, meta} = Ecto.Repo.Registry.lookup(__MODULE__)
+        adapter.checked_out?(meta)
+      end
+
       @compile {:inline, get_dynamic_repo: 0}
 
       def get_dynamic_repo() do
@@ -127,6 +132,16 @@ defmodule ExAudit.Repo do
           Ecto.Repo.Queryable.one!(get_dynamic_repo(), queryable, opts)
         end
 
+        def aggregate(queryable, aggregate, opts)
+            when aggregate in [:count] and is_list(opts) do
+          Ecto.Repo.Queryable.aggregate(
+            get_dynamic_repo(),
+            queryable,
+            aggregate,
+            opts
+          )
+        end
+
         def aggregate(queryable, aggregate, field, opts \\ [])
             when aggregate in [:count, :avg, :max, :min, :sum] and is_atom(field) do
           Ecto.Repo.Queryable.aggregate(get_dynamic_repo(), queryable, aggregate, field, opts)
@@ -143,6 +158,14 @@ defmodule ExAudit.Repo do
             preloads,
             opts
           )
+        end
+
+        def reload(queryable, opts \\ []) do
+          Ecto.Repo.Queryable.reload(get_dynamic_repo(), queryable, opts)
+        end
+
+        def reload!(queryable, opts \\ []) do
+          Ecto.Repo.Queryable.reload!(get_dynamic_repo(), queryable, opts)
         end
 
         def prepare_query(operation, query, opts), do: {query, opts}
