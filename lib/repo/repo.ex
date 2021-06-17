@@ -199,6 +199,11 @@ defmodule ExAudit.Repo do
 
       defoverridable(child_spec: 1)
 
+      def checked_out? do
+        {adapter, meta} = Ecto.Repo.Registry.lookup(get_dynamic_repo())
+        adapter.checked_out?(meta)
+      end
+
       # additional functions
 
       def history(struct, opts \\ []) do
