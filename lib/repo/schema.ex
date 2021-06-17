@@ -1,8 +1,75 @@
 defmodule ExAudit.Schema do
-  def insert_all(module, name, schema_or_source, entries, opts) do
-    # TODO!
-    opts = augment_opts(opts)
-    Ecto.Repo.Schema.insert_all(module, name, schema_or_source, entries, opts)
+  def insert_all(module, name, schema, entries, opts) do
+    updated_opts =
+      opts
+      |> augment_opts()
+      |> Keyword.put(:returning, true)
+
+    {:ok, result} =
+      augment_transaction(module, fn ->
+        module
+        |> do_insert_all(name, schema, entries, updated_opts)
+        |> maybe_track_changes(module, :created, schema, updated_opts)
+      end)
+
+    opts
+    |> Keyword.get(:returning)
+    |> format_result(result)
+  end
+
+  defp do_insert_all(module, name, schema, entries, opts) do
+    Ecto.Repo.Schema.insert_all(
+      module,
+      name,
+      schema,
+      entries,
+      opts
+    )
+  end
+
+  defp maybe_track_changes(
+         {_number_of_entries, nil} = insert_all_result,
+         _module,
+         _action,
+         _schema,
+         _opts
+       ) do
+    insert_all_result
+  end
+
+  defp maybe_track_changes(
+         {_number_of_entries, returns} = insert_all_result,
+         module,
+         action,
+         schema,
+         opts
+       ) do
+    Enum.each(
+      returns,
+      &ExAudit.Tracking.track_change(module, action, schema, &1, opts)
+    )
+
+    insert_all_result
+  end
+
+  defp format_result(fields, {number_of_entries, returns}) when is_list(fields) do
+    updated_returns =
+      Enum.reduce(returns, [], fn return, acc ->
+        [filter_struct_fields(fields, return) | acc]
+      end)
+
+    {number_of_entries, updated_returns}
+  end
+
+  defp format_result(true, result), do: result
+  defp format_result(_, {number_of_entries, _returns}), do: {number_of_entries, nil}
+
+  defp filter_struct_fields(fields, struct) do
+    struct
+    |> Map.from_struct()
+    |> Enum.reduce(struct.__struct__.__struct__(), fn {key, value}, acc ->
+      if key in fields, do: Map.put(acc, key, value), else: acc
+    end)
   end
 
   def insert(module, name, struct, opts) do
@@ -144,10 +211,20 @@ defmodule ExAudit.Schema do
       |> Ecto.Multi.run(:main, __MODULE__, :run_in_multi, [fun, bang])
 
     case {repo.transaction(multi), bang} do
-      {{:ok, %{main: value}}, false} -> {:ok, value}
-      {{:ok, %{main: value}}, true} -> value
-      {{:error, :main, error, _}, false} -> {:error, error}
-      {{:error, :main, error, _}, true} -> raise error
+      {{:ok, %{main: value}}, false} ->
+        {:ok, value}
+
+      {{:ok, %{main: value}}, true} ->
+        value
+
+      {{:error, :main, error, _}, false} ->
+        {:error, error}
+
+      {{:error, :main, error, _}, true} ->
+        raise error
+
+      {{entries, return}, false} ->
+        {entries, return}
     end
   end
 
@@ -156,6 +233,7 @@ defmodule ExAudit.Schema do
       {{:ok, _} = ok, false} -> ok
       {{:error, _} = error, false} -> error
       {value, true} -> {:ok, value}
+      {{entries, return}, _} -> {:ok, {entries, return}}
     end
   end
 

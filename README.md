@@ -20,12 +20,14 @@ ExAudit replaces some functions in your repo module:
 
 - `insert/2`
 - `insert!/2`
+- `insert_all/3`
 - `update/2`
 - `update!/2`
 - `delete/2`
 - `delete!/2`
 
-All changes to the database made with these functions will automatically be tracked.
+All changes to the database made with these functions will automatically be tracked, except `insert_all/3`
+changes, which will only be tracked when `Ecto.Repo` is using [`Postgres Adapter`](https://hexdocs.pm/ecto_sql/Ecto.Adapters.Postgres.html#content) or [`MSSQL Adapter`](https://hexdocs.pm/ecto_sql/Ecto.Adapters.Tds.html#content).
 
 Also, new functions are added to the repository:
 
@@ -83,7 +85,7 @@ config :ex_audit,
   ]
 ```
 
-Optionally, you can tell ExAudit to treat certain structs as primitives and not record internal changes for the 
+Optionally, you can tell ExAudit to treat certain structs as primitives and not record internal changes for the
 struct. Add these under the key `:primitive_structs` in your config. So for example, if you configured `Date` to be treated as a primitive:
 
 ```elixir

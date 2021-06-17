@@ -6,6 +6,10 @@ defmodule ExAuditTest do
 
   alias ExAudit.Test.{Repo, User, Version, BlogPost, Util}
 
+  setup do
+    Ecto.Adapters.SQL.Sandbox.checkout(Repo)
+  end
+
   test "should document lifecycle of an entity" do
     params = %{
       name: "Moritz Schmale",
@@ -244,5 +248,110 @@ defmodule ExAuditTest do
       )
 
     assert 2 = Repo.aggregate(query, :count, :id)
+  end
+
+  describe "insert_all/3" do
+    setup %{opts: opts} do
+      return =
+        Repo.insert_all(
+          User,
+          [
+            [
+              name: "foo",
+              email: "foo@foo.com",
+              inserted_at: ~N[2021-01-01 01:57:57],
+              updated_at: ~N[2021-01-01 01:57:57]
+            ],
+            [
+              name: "bar",
+              email: "bar@bar.com",
+              inserted_at: ~N[2021-01-01 01:57:58],
+              updated_at: ~N[2021-01-01 01:57:58]
+            ]
+          ],
+          opts
+        )
+
+      %{return: return}
+    end
+
+    @tag opts: []
+    test "tracks insert all", %{return: return} do
+      assert {2, nil} = return
+      user1 = Repo.one(from(u in User, where: u.name == "foo"))
+
+      version1 =
+        Repo.one(
+          from(v in Version,
+            where: v.entity_id == ^user1.id,
+            where: v.entity_schema == ^User,
+            where: v.action == ^:created
+          )
+        )
+
+      assert version1.action == :created
+      assert version1.patch.name == {:added, user1.name}
+      assert version1.patch.email == {:added, user1.email}
+
+      user2 = Repo.one(from(u in User, where: u.name == "bar"))
+
+      version2 =
+        Repo.one(
+          from(v in Version,
+            where: v.entity_id == ^user2.id,
+            where: v.entity_schema == ^User,
+            where: v.action == ^:created
+          )
+        )
+
+      assert version2.action == :created
+      assert version2.patch.name == {:added, user2.name}
+      assert version2.patch.email == {:added, user2.email}
+    end
+
+    @tag opts: [returning: true]
+    test "tracks insert all with return true option", %{return: return} do
+      assert {2, users} = return
+
+      for user <- users do
+        version =
+          Repo.one(
+            from(v in Version,
+              where: v.entity_id == ^user.id,
+              where: v.entity_schema == ^User,
+              where: v.action == ^:created
+            )
+          )
+
+        assert version.action == :created
+        assert version.patch.name == {:added, user.name}
+        assert version.patch.email == {:added, user.email}
+      end
+    end
+
+    @tag opts: [returning: [:id, :name]]
+    test "tracks insert all with return fields option", %{return: return} do
+      assert {2, users} = return
+
+      for user <- users do
+        version =
+          Repo.one(
+            from(v in Version,
+              where: v.entity_id == ^user.id,
+              where: v.entity_schema == ^User,
+              where: v.action == ^:created
+            )
+          )
+
+        assert version.action == :created
+        assert version.patch.name == {:added, user.name}
+        assert user.email == nil
+      end
+    end
+
+    @tag opts: [prefix: :public]
+    test "works with other insert_all options", %{return: return} do
+      assert {2, nil} = return
+    end
   end
 end
