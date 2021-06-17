@@ -197,7 +197,19 @@ defmodule ExAudit.Repo do
         end
       end
 
-      # ExAudit.Repo behaviour
+      def default_options(_operation), do: []
+
+      defoverridable(default_options: 1)
+
+      defoverridable(child_spec: 1)
+
+      def checked_out? do
+        {adapter, meta} = Ecto.Repo.Registry.lookup(get_dynamic_repo())
+        adapter.checked_out?(meta)
+      end
+
+      # additional functions
+
       def history(struct, opts \\ []) do
         ExAudit.Queryable.history(__MODULE__, struct, opts)
       end
@@ -230,4 +242,6 @@ defmodule ExAudit.Repo do
   """
   @callback revert(version :: struct, opts :: list) ::
               {:ok, struct} | {:error, changeset :: Ecto.Changeset.t()}
+
+  @callback default_options(operation :: atom) :: keyword
 end
