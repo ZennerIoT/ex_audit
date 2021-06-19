@@ -1,8 +1,14 @@
 # ExAudit
 
+[![Module Version](https://img.shields.io/hexpm/v/ex_audit.svg)](https://hex.pm/packages/ex_audit)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/ex_audit/)
+[![Total Download](https://img.shields.io/hexpm/dt/ex_audit.svg)](https://hex.pm/packages/ex_audit)
+[![License](https://img.shields.io/hexpm/l/ex_audit.svg)](https://github.com/ZennerIoT/ex_audit/blob/master/LICENSE.md)
+[![Last Updated](https://img.shields.io/github/last-commit/ZennerIoT/ex_audit.svg)](https://github.com/ZennerIoT/ex_audit/commits/master)
+
 Ecto auditing library that transparently tracks changes and can revert them.
 
-ExAudit plugs right into your ecto repositories and hooks all the data mutating Ecto.Repo functions
+ExAudit plugs right into your Ecto repositories and hooks all the data mutating `Ecto.Repo` functions
 to track changes to entities in your database.
 
 ## Features
@@ -43,7 +49,7 @@ tracking.
 
 ## Setup
 
-Add ex_audit to your list of dependencies:
+Add `:ex_audit` to your list of dependencies:
 
 ```elixir
 def deps do
@@ -53,7 +59,13 @@ def deps do
 end
 ```
 
-For older ecto versions than 3.2, check out what to do in the [Ecto Versions](#ecto-versions) section.
+For older Ecto versions than 3.2, use the respective supported version:
+
+- For Ecto 2.x, use `{:ex_audit, "~> 0.5"}`
+- For Ecto 3.0, upgrade Ecto to 3.1
+- For Ecto 3.1, use `{:ex_audit, "~> 0.6"}`
+- For Ecto 3.1.2 or higher, upgrade Ecto to 3.2
+- For Ecto 3.2, use `{:ex_audit, "~> 0.7"}`
 
 You have to hook `ExAudit.Repo` to your repo:
 
@@ -71,7 +83,7 @@ end
 
 You have to tell ExAudit which schemas to track and the module of your version schema.
 
-In your config.exs, write something like this:
+In your `config.exs`, write something like this:
 
 ```elixir
 config :ex_audit,
@@ -83,8 +95,10 @@ config :ex_audit,
   ]
 ```
 
-Optionally, you can tell ExAudit to treat certain structs as primitives and not record internal changes for the 
-struct. Add these under the key `:primitive_structs` in your config. So for example, if you configured `Date` to be treated as a primitive:
+Optionally, you can tell ExAudit to treat certain structs as primitives and not
+record internal changes for the struct. Add these under the key
+`:primitive_structs` in your config. So for example, if you configured `Date`
+to be treated as a primitive:
 
 ```elixir
 config :ex_audit,
@@ -195,15 +209,16 @@ end
 
 ### Recording custom data
 
-If you want to track custom data such as the user id, you can simply pass a keyword list with that data
-to the `:ex_audit_custom` option in any Repo function:
+If you want to track custom data such as the user id, you can simply pass a
+keyword list with that data to the `:ex_audit_custom` option in any Repo
+function:
 
 ```elixir
 MyApp.Repo.insert(changeset, ex_audit_custom: [user_id: conn.assigns.current_user.id])
 ```
 
-Of course it is tedious to upgrade your entire codebase just to track the user ID for example, so you can
-also pass this data in a plug:
+Of course it is tedious to upgrade your entire codebase just to track the user
+ID for example, so you can also pass this data in a plug:
 
 ```elixir
 defmodule MyApp.ExAuditPlug do
@@ -218,12 +233,14 @@ defmodule MyApp.ExAuditPlug do
 end
 ```
 
-In the background, ExAudit.track will remember the PID it was called from and attaches the passed data to that
-PID. In most cases, the conn process will call the Repo functions, so ExAudit can get the data from that PID again deeper
+In the background, `ExAudit.track/1` will remember the PID it was called from
+and attaches the passed data to that PID. In most cases, the conn process will
+call the Repo functions, so ExAudit can get the data from that PID again deeper
 in the plug tree.
 
-In some cases where it is not possible to call the Repo function from the conn process, you have to pass the
-custom data manually via the options described above.
+In some cases where it is not possible to call the Repo function from the conn
+process, you have to pass the custom data manually via the options described
+above.
 
 Examples for data you might want to track additionally:
 
@@ -231,20 +248,14 @@ Examples for data you might want to track additionally:
 - API Key ID
 - Message from the user describing what she changed
 
-## Ecto versions
-
-For ecto 2.x, use `{:ex_audit, "~> 0.5"}`
-
-For ecto 3.0, upgrade ecto to 3.1
-
-For ecto 3.1, use `{:ex_audit, "~> 0.6"}`
-
-For ecto 3.1.2 or higher, upgrade ecto to 3.2
-
-For ecto 3.2, use `{:ex_audit, "~> 0.7"}`
-
 ## More
 
 The documentation is available at [https://hexdocs.pm/ex_audit](https://hexdocs.pm/ex_audit).
 
 Check out [ZENNER IoT Solutions](https://zenner-iot.com/), makers of the [ELEMENT IoT platform](https://zenner-iot.com/iot-plattform).
+
+## Copyright and License
+
+Copyright (c) 2017 ZENNER IoT Solutions
+
+This library is released under the MIT License. See the [LICENSE.md](./LICENSE.md) file.

@@ -1,6 +1,6 @@
 defmodule ExAudit.Patch do
   @doc """
-  Applies the patch to the given term
+  Applies the patch to the given term.
   """
   def patch(_, {:primitive_change, _, b}) do
     b

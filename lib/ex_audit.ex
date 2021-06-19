@@ -13,14 +13,14 @@ defmodule ExAudit do
   end
 
   @doc """
-  Tracks the given keyword list of data for the current process
+  Tracks the given keyword list of data for the current process.
   """
   def track(data) do
     track_pid(self(), data)
   end
 
   @doc """
-  Tracks the given keyword list of data for the given process
+  Tracks the given keyword list of data for the given process.
   """
   def track_pid(pid, data) do
     ExAudit.CustomData.track(pid, data)
