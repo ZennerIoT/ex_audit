@@ -83,7 +83,7 @@ config :ex_audit,
   ]
 ```
 
-Optionally, you can tell ExAudit to treat certain structs as primitives and not record internal changes for the 
+Optionally, you can tell ExAudit to treat certain structs as primitives and not record internal changes for the
 struct. Add these under the key `:primitive_structs` in your config. So for example, if you configured `Date` to be treated as a primitive:
 
 ```elixir
@@ -113,6 +113,17 @@ instead of descending into the struct to find the individual part that changed:
 {:changed, %{day: {:changed, {:primitive_change, 1, 18}}}}
 ```
 
+### Precision in the timestamp
+
+When you are generating the tables of *ex_audit*, in some cases, the precision in the fields are in `:millisecond`, in such case you can change the precision of the field.
+
+```elixir
+config :ex_audit,
+  # ...
+  precision: :millisecond, # :microsecond is default
+  # ...
+```
+
 ### Version Schema and Migration
 
 You need to copy the migration and the schema module for the versions table. This allows you to add custom fields
@@ -139,7 +150,7 @@ defmodule MyApp.Version do
     field :action, ExAudit.Type.Action
 
     # when has this happened
-    field :recorded_at, :utc_datetime
+    field :recorded_at, :utc_datetime_usec
 
     # was this change part of a rollback?
     field :rollback, :boolean, default: false
