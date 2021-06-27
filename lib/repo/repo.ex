@@ -24,6 +24,7 @@ defmodule ExAudit.Repo do
       @otp_app otp_app
       @adapter adapter
       @before_compile adapter
+      @aggregates [:count, :avg, :max, :min, :sum]
 
       def __adapter__ do
         @adapter
@@ -147,8 +148,8 @@ defmodule ExAudit.Repo do
           Ecto.Repo.Queryable.aggregate(get_dynamic_repo(), queryable, aggregate, field, with_default_options(:all, []))
         end
 
-        def aggregate(queryable, aggregate, field, opts \\ [])
-            when aggregate in [:count, :avg, :max, :min, :sum] and is_atom(field) do
+        def aggregate(queryable, aggregate, field, opts)
+            when aggregate in @aggregates and is_atom(field) and is_list(opts) do
           Ecto.Repo.Queryable.aggregate(get_dynamic_repo(), queryable, aggregate, field, with_default_options(:all, opts))
         end
 
