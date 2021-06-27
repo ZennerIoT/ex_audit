@@ -61,6 +61,7 @@ defmodule ExAudit.Tracking do
 
   def insert_versions(module, changes, opts) do
     now = DateTime.utc_now()
+    empty_version_schema = struct(version_schema(), %{})
 
     custom_fields =
       Keyword.get(opts, :ex_audit_custom, [])
@@ -68,8 +69,14 @@ defmodule ExAudit.Tracking do
 
     changes =
       Enum.map(changes, fn change ->
-        change = Map.put(change, :recorded_at, now)
-        Map.merge(change, custom_fields)
+        change =
+          change
+          |> Map.put(:recorded_at, now)
+          |> Map.merge(custom_fields)
+
+        version_schema()
+        |> apply(:changeset, [empty_version_schema, change])
+        |> Map.get(:changes)
       end)
 
     case changes do
