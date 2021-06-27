@@ -24,6 +24,7 @@ defmodule ExAudit.Repo do
       @otp_app otp_app
       @adapter adapter
       @before_compile adapter
+      @aggregates [:count, :avg, :max, :min, :sum]
 
       def __adapter__ do
         @adapter
@@ -88,61 +89,76 @@ defmodule ExAudit.Repo do
 
       if Ecto.Adapter.Queryable in behaviours do
         def update_all(queryable, updates, opts \\ []) do
-          Ecto.Repo.Queryable.update_all(get_dynamic_repo(), queryable, updates, opts)
+          Ecto.Repo.Queryable.update_all(get_dynamic_repo(), queryable, updates, with_default_options(:update_all, opts))
         end
 
         def delete_all(queryable, opts \\ []) do
-          Ecto.Repo.Queryable.delete_all(get_dynamic_repo(), queryable, opts)
+          Ecto.Repo.Queryable.delete_all(get_dynamic_repo(), queryable, with_default_options(:delete_all, opts))
         end
 
         def all(queryable, opts \\ []) do
-          Ecto.Repo.Queryable.all(get_dynamic_repo(), queryable, opts)
+          Ecto.Repo.Queryable.all(get_dynamic_repo(), queryable, with_default_options(:all, opts))
         end
 
         def stream(queryable, opts \\ []) do
-          Ecto.Repo.Queryable.stream(get_dynamic_repo(), queryable, opts)
+          Ecto.Repo.Queryable.stream(get_dynamic_repo(), queryable, with_default_options(:stream, opts))
         end
 
         def get(queryable, id, opts \\ []) do
-          Ecto.Repo.Queryable.get(get_dynamic_repo(), queryable, id, opts)
+          Ecto.Repo.Queryable.get(get_dynamic_repo(), queryable, id, with_default_options(:all, opts))
         end
 
         def get!(queryable, id, opts \\ []) do
-          Ecto.Repo.Queryable.get!(get_dynamic_repo(), queryable, id, opts)
+          Ecto.Repo.Queryable.get!(get_dynamic_repo(), queryable, id, with_default_options(:all, opts))
         end
 
         def get_by(queryable, clauses, opts \\ []) do
-          Ecto.Repo.Queryable.get_by(get_dynamic_repo(), queryable, clauses, opts)
+          Ecto.Repo.Queryable.get_by(get_dynamic_repo(), queryable, clauses, with_default_options(:all, opts))
         end
 
         def get_by!(queryable, clauses, opts \\ []) do
-          Ecto.Repo.Queryable.get_by!(get_dynamic_repo(), queryable, clauses, opts)
+          Ecto.Repo.Queryable.get_by!(get_dynamic_repo(), queryable, clauses, with_default_options(:all, opts))
+        end
+
+        def reload(queryable, opts \\ []) do
+          Ecto.Repo.Queryable.reload(get_dynamic_repo(), queryable, opts)
+        end
+
+        def reload!(queryable, opts \\ []) do
+          Ecto.Repo.Queryable.reload!(get_dynamic_repo(), queryable, opts)
         end
 
         def one(queryable, opts \\ []) do
-          Ecto.Repo.Queryable.one(get_dynamic_repo(), queryable, opts)
+          Ecto.Repo.Queryable.one(get_dynamic_repo(), queryable, with_default_options(:all, opts))
         end
 
         def one!(queryable, opts \\ []) do
-          Ecto.Repo.Queryable.one!(get_dynamic_repo(), queryable, opts)
+          Ecto.Repo.Queryable.one!(get_dynamic_repo(), queryable, with_default_options(:all, opts))
         end
 
-        def aggregate(queryable, aggregate, field, opts \\ [])
-            when aggregate in [:count, :avg, :max, :min, :sum] and is_atom(field) do
-          Ecto.Repo.Queryable.aggregate(get_dynamic_repo(), queryable, aggregate, field, opts)
+        def aggregate(queryable, aggregate, opts \\ [])
+
+        def aggregate(queryable, aggregate, opts)
+            when aggregate in [:count] and is_list(opts) do
+          Ecto.Repo.Queryable.aggregate(get_dynamic_repo(), queryable, aggregate, with_default_options(:all, opts))
+        end
+
+        def aggregate(queryable, aggregate, field)
+            when aggregate in @aggregates and is_atom(field) do
+          Ecto.Repo.Queryable.aggregate(get_dynamic_repo(), queryable, aggregate, field, with_default_options(:all, []))
+        end
+
+        def aggregate(queryable, aggregate, field, opts)
+            when aggregate in @aggregates and is_atom(field) and is_list(opts) do
+          Ecto.Repo.Queryable.aggregate(get_dynamic_repo(), queryable, aggregate, field, with_default_options(:all, opts))
         end
 
         def exists?(queryable, opts \\ []) do
-          Ecto.Repo.Queryable.exists?(get_dynamic_repo(), queryable, opts)
+          Ecto.Repo.Queryable.exists?(get_dynamic_repo(), queryable, with_default_options(:all, opts))
         end
 
         def preload(struct_or_structs_or_nil, preloads, opts \\ []) do
-          Ecto.Repo.Preloader.preload(
-            struct_or_structs_or_nil,
-            get_dynamic_repo(),
-            preloads,
-            opts
-          )
+          Ecto.Repo.Preloader.preload(struct_or_structs_or_nil, get_dynamic_repo(), preloads, with_default_options(:preload, opts))
         end
 
         def prepare_query(operation, query, opts), do: {query, opts}
@@ -151,51 +167,49 @@ defmodule ExAudit.Repo do
 
       if Ecto.Adapter.Schema in behaviours do
         def insert(struct, opts \\ []) do
-          ExAudit.Schema.insert(__MODULE__, get_dynamic_repo(), struct, opts)
+          ExAudit.Schema.insert(__MODULE__, get_dynamic_repo(), struct, with_default_options(:insert, opts))
         end
 
         def update(struct, opts \\ []) do
-          ExAudit.Schema.update(__MODULE__, get_dynamic_repo(), struct, opts)
+          ExAudit.Schema.update(__MODULE__, get_dynamic_repo(), struct, with_default_options(:update, opts))
         end
 
         def insert_or_update(changeset, opts \\ []) do
-          ExAudit.Schema.insert_or_update(__MODULE__, get_dynamic_repo(), changeset, opts)
+          ExAudit.Schema.insert_or_update(__MODULE__, get_dynamic_repo(), changeset, with_default_options(:insert_or_update, opts))
         end
 
         def delete(struct, opts \\ []) do
-          ExAudit.Schema.delete(__MODULE__, get_dynamic_repo(), struct, opts)
+          ExAudit.Schema.delete(__MODULE__, get_dynamic_repo(), struct, with_default_options(:delete, opts))
         end
 
         def insert!(struct, opts \\ []) do
-          ExAudit.Schema.insert!(__MODULE__, get_dynamic_repo(), struct, opts)
+          ExAudit.Schema.insert!(__MODULE__, get_dynamic_repo(), struct, with_default_options(:insert, opts))
         end
 
         def update!(struct, opts \\ []) do
-          ExAudit.Schema.update!(__MODULE__, get_dynamic_repo(), struct, opts)
+          ExAudit.Schema.update!(__MODULE__, get_dynamic_repo(), struct, with_default_options(:update, opts))
         end
 
         def insert_or_update!(changeset, opts \\ []) do
-          ExAudit.Schema.insert_or_update!(__MODULE__, get_dynamic_repo(), changeset, opts)
+          ExAudit.Schema.insert_or_update!(__MODULE__, get_dynamic_repo(), changeset, with_default_options(:insert_or_update, opts))
         end
 
         def delete!(struct, opts \\ []) do
-          ExAudit.Schema.delete!(__MODULE__, get_dynamic_repo(), struct, opts)
+          ExAudit.Schema.delete!(__MODULE__, get_dynamic_repo(), struct, with_default_options(:delete, opts))
         end
 
         def insert_all(schema_or_source, entries, opts \\ []) do
-          ExAudit.Schema.insert_all(
-            __MODULE__,
-            get_dynamic_repo(),
-            schema_or_source,
-            entries,
-            opts
-          )
+          ExAudit.Schema.insert_all(__MODULE__, get_dynamic_repo(), schema_or_source, entries, with_default_options(:insert_all, opts))
         end
       end
 
       def default_options(_operation), do: []
 
       defoverridable(default_options: 1)
+
+      defp with_default_options(operation_name, opts) do
+        Keyword.merge(default_options(operation_name), opts)
+      end
 
       defoverridable(child_spec: 1)
 
@@ -238,6 +252,4 @@ defmodule ExAudit.Repo do
   """
   @callback revert(version :: struct, opts :: list) ::
               {:ok, struct} | {:error, changeset :: Ecto.Changeset.t()}
-
-  @callback default_options(operation :: atom) :: keyword
 end
