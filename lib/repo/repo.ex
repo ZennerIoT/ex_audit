@@ -59,11 +59,6 @@ defmodule ExAudit.Repo do
         adapter.checkout(meta, opts, fun)
       end
 
-      def checked_out? do
-        {adapter, meta} = Ecto.Repo.Registry.lookup(__MODULE__)
-        adapter.checked_out?(meta)
-      end
-
       @compile {:inline, get_dynamic_repo: 0}
 
       def get_dynamic_repo() do
@@ -140,14 +135,16 @@ defmodule ExAudit.Repo do
           Ecto.Repo.Queryable.one!(get_dynamic_repo(), queryable, with_default_options(:all, opts))
         end
 
+        def aggregate(queryable, aggregate, opts \\ [])
+
         def aggregate(queryable, aggregate, opts)
             when aggregate in [:count] and is_list(opts) do
-          Ecto.Repo.Queryable.aggregate(
-            get_dynamic_repo(),
-            queryable,
-            aggregate,
-            with_default_options(:all, opts)
-          )
+          Ecto.Repo.Queryable.aggregate(get_dynamic_repo(), queryable, aggregate, with_default_options(:all, opts))
+        end
+
+        def aggregate(queryable, aggregate, field)
+            when aggregate in @aggregates and is_atom(field) do
+          Ecto.Repo.Queryable.aggregate(get_dynamic_repo(), queryable, aggregate, field, with_default_options(:all, []))
         end
 
         def aggregate(queryable, aggregate, field, opts \\ [])
@@ -209,10 +206,15 @@ defmodule ExAudit.Repo do
 
       defoverridable(default_options: 1)
 
-      defoverridable(child_spec: 1)
-
       defp with_default_options(operation_name, opts) do
         Keyword.merge(default_options(operation_name), opts)
+      end
+
+      defoverridable(child_spec: 1)
+
+      def checked_out? do
+        {adapter, meta} = Ecto.Repo.Registry.lookup(__MODULE__)
+        adapter.checked_out?(meta)
       end
 
       # additional functions
