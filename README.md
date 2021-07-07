@@ -63,7 +63,10 @@ defmodule MyApp.Repo do
     otp_app: :my_app,
     adapter: Ecto.Adapters.Postgres
 
-  use ExAudit.Repo
+  # having it in test environment might be unnecessary due to performance overhead
+  if Mix.env() != :test do
+    use ExAudit.Repo
+  end
 end
 ```
 
