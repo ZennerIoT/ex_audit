@@ -1,16 +1,16 @@
 defprotocol ExAudit.Tracker do
   @moduledoc """
-  Enables you to influence which fields are tracked. In map_struct, remove or alter any fields
-  you don't want tracked.
+  Enables you to influence which fields are tracked.
 
-  Most of the time, you can just use 
-  ```
-  @derive {ExAudit.Tracker, options}
-  ```
+  In map_struct, remove or alter any fields you don't want tracked.
 
-  where options is either: 
+  Most of the time, you can just use:
 
-   * `except: [:foo, :bar]` to ignore certain fields or 
+      @derive {ExAudit.Tracker, options}
+
+  where options is either:
+
+   * `except: [:foo, :bar]` to ignore certain fields or
    * `only: [:baz, :foobar]` to track only those fields.
   """
 

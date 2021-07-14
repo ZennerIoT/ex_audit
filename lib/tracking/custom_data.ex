@@ -2,7 +2,7 @@ defmodule ExAudit.CustomData do
   use GenServer
 
   @moduledoc """
-  ETS table that stores custom data for pids
+  ETS table that stores custom data for pids.
   """
 
   def start_link() do
