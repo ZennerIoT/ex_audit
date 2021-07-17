@@ -1,6 +1,8 @@
 defmodule ExAudit.Type.Schema do
   use Ecto.Type
 
+  @type t() :: module()
+
   def cast(schema) when is_atom(schema) do
     case Enum.member?(schemas(), schema) do
       true -> {:ok, schema}
