@@ -219,7 +219,7 @@ defmodule ExAudit.Repo do
   Gathers the version history for the given struct, ordered by the time the changes
   happened from newest to oldest.
   ### Options
-   * `:render_structs` if true, renders the _resulting_ struct of the patch for every version in its history.
+   * `:render_struct` if true, renders the _resulting_ struct of the patch for every version in its history.
      This will shift the ids of the versions one down, so visualisations are correct and corresponding "Revert"
      buttons revert the struct back to the visualized state.
      Will append an additional version that contains the oldest ID and the oldest struct known. In most cases, the
