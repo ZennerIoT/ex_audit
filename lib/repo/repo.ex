@@ -206,7 +206,7 @@ defmodule ExAudit.Repo do
       # additional functions
 
       def history(struct, opts \\ []) do
-        ExAudit.Queryable.history(__MODULE__, struct, opts)
+        ExAudit.Queryable.history(__MODULE__, struct, &Ecto.Repo.Queryable.all/3, opts)
       end
 
       def revert(version, opts \\ []) do

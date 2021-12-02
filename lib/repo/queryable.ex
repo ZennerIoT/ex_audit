@@ -15,7 +15,7 @@ defmodule ExAudit.Queryable do
     Ecto.Repo.Queryable.delete_all(module, queryable, opts)
   end
 
-  def history(module, struct, opts) do
+  def history(module, struct, query_callback, opts) do
     import Ecto.Query
 
     query =
@@ -40,7 +40,7 @@ defmodule ExAudit.Queryable do
           )
       end
 
-    versions = Ecto.Repo.Queryable.all(module, query, opts)
+    versions = query_callback.(module, query, opts)
 
     if Keyword.get(opts, :render_struct, false) do
       {versions, oldest_struct} =

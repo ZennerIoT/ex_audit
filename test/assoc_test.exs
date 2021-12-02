@@ -49,6 +49,26 @@ defmodule AssocTest do
            } = version
   end
 
+  test "can manipulte history fetching" do
+    {:ok, old_date} = Date.new(2000, 1, 1)
+    params = %{name: "Bob", email: "foo@bar.com", birthday: old_date}
+    changeset = User.changeset(%User{}, params)
+    {:ok, user} = Repo.insert(changeset)
+
+    new_date = Date.add(old_date, 17)
+    params = %{birthday: new_date}
+    changeset = User.changeset(user, params)
+    {:ok, user} = Repo.update(changeset)
+
+    version = Repo.custom_history_fetch_latest_version_only(user)
+
+    assert %{
+             patch: %{
+               birthday: {:changed, {:primitive_change, ^old_date, ^new_date}}
+             }
+           } = version
+  end
+
   test "should track cascading deletions (before they happen)" do
     user = Util.create_user()
 
