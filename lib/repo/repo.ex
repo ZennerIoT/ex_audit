@@ -197,6 +197,10 @@ defmodule ExAudit.Repo do
         end
       end
 
+      def default_options(_operation), do: []
+
+      defoverridable(default_options: 1)
+
       defoverridable(child_spec: 1)
 
       # additional functions
@@ -233,4 +237,6 @@ defmodule ExAudit.Repo do
   """
   @callback revert(version :: struct, opts :: list) ::
               {:ok, struct} | {:error, changeset :: Ecto.Changeset.t()}
+
+  @callback default_options(operation :: atom) :: keyword
 end
