@@ -51,7 +51,7 @@ defmodule ExAudit.Tracking do
     end
   end
 
-  def track_change(module, action, changeset, resulting_struct, opts) do
+  def track_change(module, action, changeset, resulting_struct, {_adapter_meta, opts}) do
     if not Keyword.get(opts, :ignore_audit, false) do
       changes = find_changes(action, changeset, resulting_struct)
 
@@ -112,7 +112,7 @@ defmodule ExAudit.Tracking do
     |> Enum.flat_map(&compare_versions(:deleted, &1, %{}))
   end
 
-  def track_assoc_deletion(module, struct, opts) do
+  def track_assoc_deletion(module, struct, {_adapter_meta, opts}) do
     deleted_structs = find_assoc_deletion(module, struct, opts)
 
     insert_versions(module, deleted_structs, opts)
