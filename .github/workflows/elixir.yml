@@ -19,7 +19,8 @@ jobs:
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
-      - run: mix do deps.get, compile --warnings-as-errors
+      - run: mix do deps.get
+      # - run: mix compile --warnings-as-errors
       - run: mix format --dry-run --check-formatted
       - run: mix test
 
@@ -36,7 +37,8 @@ jobs:
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
-      - run: mix do deps.get, compile --warnings-as-errors
+      - run: mix do deps.get
+      # - run: mix compile --warnings-as-errors
       - run: mix format --dry-run --check-formatted
       - run: mix test
 
@@ -53,5 +55,6 @@ jobs:
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
-      - run: mix do deps.get, compile --warnings-as-errors
+      - run: mix do deps.get
+      # - run: mix compile --warnings-as-errors
       - run: mix test
