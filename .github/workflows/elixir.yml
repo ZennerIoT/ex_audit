@@ -55,19 +55,3 @@ jobs:
           elixir-version: ${{matrix.elixir}}
       - run: mix do deps.get, compile --warnings-as-errors
       - run: mix test
-
-  elixir_1_10:
-    runs-on: ubuntu-latest
-    name: OTP ${{matrix.otp}} / Elixir ${{matrix.elixir}}
-    strategy:
-      matrix:
-        otp: [21.x, 22.x, 23.x]
-        elixir: [1.10.x]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: erlef/setup-beam@v1
-        with:
-          otp-version: ${{matrix.otp}}
-          elixir-version: ${{matrix.elixir}}
-      - run: mix do deps.get, compile --warnings-as-errors
-      - run: mix test
