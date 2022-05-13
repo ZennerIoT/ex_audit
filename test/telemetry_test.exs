@@ -17,17 +17,19 @@ defmodule ExAudit.TelemetryTest do
       []
     )
 
-    %{id: user_id} = Repo.insert!(User.changeset(%User{}, %{name: "Admin", email: "admin@example.com"}))
+    %{id: user_id} =
+      Repo.insert!(User.changeset(%User{}, %{name: "Admin", email: "admin@example.com"}))
 
     assert_received {:event_name, [:ex_audit, :insert_version]}, 1_000
     assert_receive {:event_measurement, %{system_time: _time}}, 1_000
 
     assert_receive {:event_metadata, event_metadata}, 1_000
+
     assert %Version{
-        action: :created,
-        actor_id: nil,
-        entity_id: ^user_id,
-        entity_schema: User,
-    } = event_metadata
+             action: :created,
+             actor_id: nil,
+             entity_id: ^user_id,
+             entity_schema: User
+           } = event_metadata
   end
 end

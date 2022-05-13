@@ -82,7 +82,7 @@ defmodule ExAudit.Tracking do
         opts =
           opts
           |> Keyword.drop([:on_conflict, :conflict_target])
-          |> Keyword.merge([returning: true])
+          |> Keyword.merge(returning: true)
 
         {_, versions} = result = module.insert_all(version_schema(), changes, opts)
 
