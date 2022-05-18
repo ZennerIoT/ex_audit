@@ -8,11 +8,13 @@ defmodule ExAudit.Queryable do
   @compile {:inline, version_schema: 0}
 
   def update_all(module, queryable, updates, opts) do
-    Ecto.Repo.Queryable.update_all(module, queryable, updates, opts)
+    opts = prepare_opts(module, :update_all, opts)
+    Ecto.Repo.Queryable.update_all(module, queryable, updates, tuplet(module, opts))
   end
 
   def delete_all(module, queryable, opts) do
-    Ecto.Repo.Queryable.delete_all(module, queryable, opts)
+    opts = prepare_opts(module, :delete_all, opts)
+    Ecto.Repo.Queryable.delete_all(module, queryable, tuplet(module, opts))
   end
 
   def history(module, struct, opts) do
@@ -40,7 +42,8 @@ defmodule ExAudit.Queryable do
           )
       end
 
-    versions = Ecto.Repo.Queryable.all(module, query, opts)
+    opts = prepare_opts(module, :all, opts)
+    versions = Ecto.Repo.Queryable.all(module, query, tuplet(module, opts))
 
     if Keyword.get(opts, :render_struct, false) do
       {versions, oldest_struct} =
@@ -176,4 +179,13 @@ defmodule ExAudit.Queryable do
   defp reverse_action(:updated), do: :updated
   defp reverse_action(:created), do: :deleted
   defp reverse_action(:deleted), do: :created
+
+  defp prepare_opts(module, operation_name, opts) do
+    default_opts = module.default_options(operation_name)
+    Keyword.merge(opts, default_opts)
+  end
+
+  defp tuplet(module, opts) do
+    Ecto.Repo.Supervisor.tuplet(module, opts)
+  end
 end

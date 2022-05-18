@@ -1,15 +1,14 @@
 defmodule ExAudit.Schema do
   def insert_all(module, name, schema_or_source, entries, opts) do
     # TODO!
-    opts = augment_opts(opts)
-    Ecto.Repo.Schema.insert_all(module, name, schema_or_source, entries, opts)
+    opts = prepare_opts(module, :insert_all, opts)
+    Ecto.Repo.Schema.insert_all(module, name, schema_or_source, entries, tuplet(module, opts))
   end
 
   def insert(module, name, struct, opts) do
-    opts = augment_opts(opts)
-
     augment_transaction(module, fn ->
-      result = Ecto.Repo.Schema.insert(module, name, struct, opts)
+      opts = prepare_opts(module, :insert, opts)
+      result = Ecto.Repo.Schema.insert(module, name, struct, tuplet(module, opts))
 
       case result do
         {:ok, resulting_struct} ->
@@ -24,10 +23,10 @@ defmodule ExAudit.Schema do
   end
 
   def update(module, name, struct, opts) do
-    opts = augment_opts(opts)
+    opts = prepare_opts(module, :update, opts)
 
     augment_transaction(module, fn ->
-      result = Ecto.Repo.Schema.update(module, name, struct, opts)
+      result = Ecto.Repo.Schema.update(module, name, struct, tuplet(module, opts))
 
       case result do
         {:ok, resulting_struct} ->
@@ -42,10 +41,10 @@ defmodule ExAudit.Schema do
   end
 
   def insert_or_update(module, name, changeset, opts) do
-    opts = augment_opts(opts)
+    opts = prepare_opts(module, :insert_or_update, opts)
 
     augment_transaction(module, fn ->
-      result = Ecto.Repo.Schema.insert_or_update(module, name, changeset, opts)
+      result = Ecto.Repo.Schema.insert_or_update(module, name, changeset, tuplet(module, opts))
 
       case result do
         {:ok, resulting_struct} ->
@@ -61,11 +60,11 @@ defmodule ExAudit.Schema do
   end
 
   def delete(module, name, struct, opts) do
-    opts = augment_opts(opts)
+    opts = prepare_opts(module, :delete, opts)
 
     augment_transaction(module, fn ->
       ExAudit.Tracking.track_assoc_deletion(module, struct, opts)
-      result = Ecto.Repo.Schema.delete(module, name, struct, opts)
+      result = Ecto.Repo.Schema.delete(module, name, struct, tuplet(module, opts))
 
       case result do
         {:ok, resulting_struct} ->
@@ -80,12 +79,12 @@ defmodule ExAudit.Schema do
   end
 
   def insert!(module, name, struct, opts) do
-    opts = augment_opts(opts)
+    opts = prepare_opts(module, :insert, opts)
 
     augment_transaction(
       module,
       fn ->
-        result = Ecto.Repo.Schema.insert!(module, name, struct, opts)
+        result = Ecto.Repo.Schema.insert!(module, name, struct, tuplet(module, opts))
         ExAudit.Tracking.track_change(module, :created, struct, result, opts)
         result
       end,
@@ -94,12 +93,12 @@ defmodule ExAudit.Schema do
   end
 
   def update!(module, name, struct, opts) do
-    opts = augment_opts(opts)
+    opts = prepare_opts(module, :update, opts)
 
     augment_transaction(
       module,
       fn ->
-        result = Ecto.Repo.Schema.update!(module, name, struct, opts)
+        result = Ecto.Repo.Schema.update!(module, name, struct, tuplet(module, opts))
         ExAudit.Tracking.track_change(module, :updated, struct, result, opts)
         result
       end,
@@ -108,12 +107,12 @@ defmodule ExAudit.Schema do
   end
 
   def insert_or_update!(module, name, changeset, opts) do
-    opts = augment_opts(opts)
+    opts = prepare_opts(module, :insert_or_update, opts)
 
     augment_transaction(
       module,
       fn ->
-        result = Ecto.Repo.Schema.insert_or_update!(module, name, changeset, opts)
+        result = Ecto.Repo.Schema.insert_or_update!(module, name, changeset, tuplet(module, opts))
         state = if changeset.data.__meta__.state == :loaded, do: :updated, else: :created
         ExAudit.Tracking.track_change(module, state, changeset, result, opts)
         result
@@ -123,13 +122,13 @@ defmodule ExAudit.Schema do
   end
 
   def delete!(module, name, struct, opts) do
-    opts = augment_opts(opts)
+    opts = prepare_opts(module, :delete, opts)
 
     augment_transaction(
       module,
       fn ->
         ExAudit.Tracking.track_assoc_deletion(module, struct, opts)
-        result = Ecto.Repo.Schema.delete!(module, name, struct, opts)
+        result = Ecto.Repo.Schema.delete!(module, name, struct, tuplet(module, opts))
         ExAudit.Tracking.track_change(module, :deleted, struct, result, opts)
         result
       end,
@@ -163,7 +162,6 @@ defmodule ExAudit.Schema do
   # it to the list of custom data from the options list
   #
   # This is done so it works inside a transaction (which happens when ecto mutates assocs at the same time)
-
   defp augment_opts(opts) do
     opts
     |> Keyword.put_new(:ex_audit_custom, [])
@@ -173,5 +171,15 @@ defmodule ExAudit.Schema do
         _ -> ExAudit.CustomData.get()
       end ++ custom_fields
     end)
+  end
+
+  defp prepare_opts(module, operation_name, opts) do
+    opts = augment_opts(opts)
+    default_opts = module.default_options(operation_name)
+    Keyword.merge(opts, default_opts)
+  end
+
+  defp tuplet(module, opts) do
+    Ecto.Repo.Supervisor.tuplet(module, opts)
   end
 end
