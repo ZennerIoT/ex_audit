@@ -40,7 +40,7 @@ defmodule ExAudit.Queryable do
           )
       end
 
-    versions = Ecto.Repo.Queryable.all(module, query, opts)
+    versions = Ecto.Repo.Queryable.all(module, query, Ecto.Repo.Supervisor.tuplet(module, opts))
 
     if Keyword.get(opts, :render_struct, false) do
       {versions, oldest_struct} =
