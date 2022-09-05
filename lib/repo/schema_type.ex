@@ -2,7 +2,7 @@ defmodule ExAudit.Type.Schema do
   use Ecto.Type
 
   def cast(schema) when is_atom(schema) do
-    case Enum.member?(schemas(), schema) do
+    case Enum.member?(ExAudit.tracked_schemas(), schema) do
       true -> {:ok, schema}
       _ -> :error
     end
@@ -22,22 +22,18 @@ defmodule ExAudit.Type.Schema do
   end
 
   def dump(schema) do
-    case Enum.member?(schemas(), schema) do
+    case Enum.member?(ExAudit.tracked_schemas(), schema) do
       true -> {:ok, schema.__schema__(:source)}
       _ -> :error
     end
   end
 
   defp get_schema_by_table(table) do
-    schemas()
+    ExAudit.tracked_schemas()
     |> Enum.find(fn schema ->
       schema.__schema__(:source) == table
     end)
   end
 
   def type, do: :string
-
-  defp schemas do
-    Application.get_env(:ex_audit, :tracked_schemas, [])
-  end
 end

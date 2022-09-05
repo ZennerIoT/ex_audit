@@ -23,7 +23,7 @@ defmodule ExAudit.Tracking do
   def compare_versions(action, old, new) do
     schema = Map.get(old, :__struct__, Map.get(new, :__struct__))
 
-    if schema in tracked_schemas() do
+    if schema in ExAudit.tracked_schemas() do
       assocs = schema.__schema__(:associations)
 
       patch =
@@ -61,7 +61,7 @@ defmodule ExAudit.Tracking do
 
   def insert_versions(module, changes, opts) do
     now = DateTime.utc_now()
-    empty_version_schema = struct(version_schema(), %{})
+    empty_version_schema = struct(ExAudit.version_schema(), %{})
 
     custom_fields =
       Keyword.get(opts, :ex_audit_custom, [])
@@ -74,7 +74,7 @@ defmodule ExAudit.Tracking do
           |> Map.put(:recorded_at, now)
           |> Map.merge(custom_fields)
 
-        version_schema()
+        ExAudit.version_schema()
         |> apply(:changeset, [empty_version_schema, change])
         |> Map.get(:changes)
       end)
@@ -85,7 +85,7 @@ defmodule ExAudit.Tracking do
 
       _ ->
         opts = Keyword.drop(opts, [:on_conflict, :conflict_target])
-        module.insert_all(version_schema(), changes, opts)
+        module.insert_all(ExAudit.version_schema(), changes, opts)
     end
   end
 
@@ -116,13 +116,5 @@ defmodule ExAudit.Tracking do
     deleted_structs = find_assoc_deletion(module, struct, opts)
 
     insert_versions(module, deleted_structs, opts)
-  end
-
-  defp tracked_schemas do
-    Application.get_env(:ex_audit, :tracked_schemas, [])
-  end
-
-  defp version_schema do
-    Application.get_env(:ex_audit, :version_schema)
   end
 end
