@@ -58,12 +58,14 @@ defmodule ExAudit.Repo do
       )
 
       def insert(struct, opts) do
+        repo = get_dynamic_repo()
+
         if ExAudit.tracked?(struct) do
           ExAudit.Schema.insert(
             __MODULE__,
-            get_dynamic_repo(),
+            repo,
             struct,
-            opts
+            Ecto.Repo.Supervisor.tuplet(repo, prepare_opts(:insert, opts))
           )
         else
           super(struct, opts)
@@ -71,12 +73,14 @@ defmodule ExAudit.Repo do
       end
 
       def update(struct, opts) do
+        repo = get_dynamic_repo()
+
         if ExAudit.tracked?(struct) do
           ExAudit.Schema.update(
             __MODULE__,
-            get_dynamic_repo(),
+            repo,
             struct,
-            opts
+            Ecto.Repo.Supervisor.tuplet(repo, prepare_opts(:update, opts))
           )
         else
           super(struct, opts)
@@ -84,12 +88,14 @@ defmodule ExAudit.Repo do
       end
 
       def insert_or_update(changeset, opts) do
-        if ExAudit.tracked?(changeset) do
+        repo = get_dynamic_repo()
+
+        if ExAudit.tracked?(struct) do
           ExAudit.Schema.insert_or_update(
             __MODULE__,
-            get_dynamic_repo(),
+            repo,
             changeset,
-            opts
+            Ecto.Repo.Supervisor.tuplet(repo, prepare_opts(:insert_or_update, opts))
           )
         else
           super(changeset, opts)
@@ -97,12 +103,14 @@ defmodule ExAudit.Repo do
       end
 
       def delete(struct, opts) do
+        repo = get_dynamic_repo()
+
         if ExAudit.tracked?(struct) do
           ExAudit.Schema.delete(
             __MODULE__,
-            get_dynamic_repo(),
+            repo,
             struct,
-            opts
+            Ecto.Repo.Supervisor.tuplet(repo, prepare_opts(:delete, opts))
           )
         else
           super(struct, opts)
@@ -110,12 +118,14 @@ defmodule ExAudit.Repo do
       end
 
       def insert!(struct, opts) do
+        repo = get_dynamic_repo()
+
         if ExAudit.tracked?(struct) do
           ExAudit.Schema.insert!(
             __MODULE__,
-            get_dynamic_repo(),
+            repo,
             struct,
-            opts
+            Ecto.Repo.Supervisor.tuplet(repo, prepare_opts(:insert, opts))
           )
         else
           super(struct, opts)
@@ -123,12 +133,14 @@ defmodule ExAudit.Repo do
       end
 
       def update!(struct, opts) do
+        repo = get_dynamic_repo()
+
         if ExAudit.tracked?(struct) do
           ExAudit.Schema.update!(
             __MODULE__,
-            get_dynamic_repo(),
+            repo,
             struct,
-            opts
+            Ecto.Repo.Supervisor.tuplet(repo, prepare_opts(:update, opts))
           )
         else
           super(struct, opts)
@@ -136,12 +148,14 @@ defmodule ExAudit.Repo do
       end
 
       def insert_or_update!(changeset, opts) do
-        if ExAudit.tracked?(changeset) do
+        repo = get_dynamic_repo()
+
+        if ExAudit.tracked?(struct) do
           ExAudit.Schema.insert_or_update!(
             __MODULE__,
-            get_dynamic_repo(),
+            repo,
             changeset,
-            opts
+            Ecto.Repo.Supervisor.tuplet(repo, prepare_opts(:insert_or_update, opts))
           )
         else
           super(changeset, opts)
@@ -149,21 +163,19 @@ defmodule ExAudit.Repo do
       end
 
       def delete!(struct, opts) do
+        repo = get_dynamic_repo()
+
         if ExAudit.tracked?(struct) do
           ExAudit.Schema.delete!(
             __MODULE__,
-            get_dynamic_repo(),
+            repo,
             struct,
-            opts
+            Ecto.Repo.Supervisor.tuplet(repo, prepare_opts(:delete, opts))
           )
         else
           super(struct, opts)
         end
       end
-
-      def default_options(_operation), do: []
-
-      defoverridable(default_options: 1)
 
       defoverridable(child_spec: 1)
 
@@ -201,6 +213,4 @@ defmodule ExAudit.Repo do
   """
   @callback revert(version :: struct, opts :: list) ::
               {:ok, struct} | {:error, changeset :: Ecto.Changeset.t()}
-
-  @callback default_options(operation :: atom) :: keyword
 end
