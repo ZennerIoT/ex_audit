@@ -57,46 +57,10 @@ defmodule ExAudit.Repo do
         delete!: 2
       )
 
-      @doc """
-        Decides based on config `tracked_schema` wether the current schema is tracked or not.
-        Can be overwritten for custom tracking logic.
-
-        E.g.
-        ```
-          def tracked?(struct_or_schema) do
-            tracked? =
-              case Process.get(__MODULE__) do
-                %{tracked?: true} -> true
-                _ -> false
-              end
-
-            tracked? && super(struct_or_schema)
-          end
-        ```
-      """
-      def tracked?(struct_or_changeset) do
-        tracked_schemas = Application.get_env(:ex_audit, :tracked_schemas, [])
-
-        schema =
-          case struct_or_changeset do
-            %Ecto.Changeset{} = changeset ->
-              Map.get(changeset.data, :__struct__)
-
-            _ ->
-              Map.get(struct_or_changeset, :__struct__)
-          end
-
-        schema in tracked_schemas
-      end
-
-      @compile {:inline, tracked?: 1}
-
-      defoverridable(tracked?: 1)
-
       def insert(struct, opts) do
         repo = get_dynamic_repo()
 
-        if tracked?(struct) do
+        if ExAudit.tracked?(struct) do
           ExAudit.Schema.insert(
             __MODULE__,
             repo,
@@ -111,7 +75,7 @@ defmodule ExAudit.Repo do
       def update(struct, opts) do
         repo = get_dynamic_repo()
 
-        if tracked?(struct) do
+        if ExAudit.tracked?(struct) do
           ExAudit.Schema.update(
             __MODULE__,
             repo,
@@ -126,7 +90,7 @@ defmodule ExAudit.Repo do
       def insert_or_update(changeset, opts) do
         repo = get_dynamic_repo()
 
-        if tracked?(changeset) do
+        if ExAudit.tracked?(struct) do
           ExAudit.Schema.insert_or_update(
             __MODULE__,
             repo,
@@ -141,7 +105,7 @@ defmodule ExAudit.Repo do
       def delete(struct, opts) do
         repo = get_dynamic_repo()
 
-        if tracked?(struct) do
+        if ExAudit.tracked?(struct) do
           ExAudit.Schema.delete(
             __MODULE__,
             repo,
@@ -156,7 +120,7 @@ defmodule ExAudit.Repo do
       def insert!(struct, opts) do
         repo = get_dynamic_repo()
 
-        if tracked?(struct) do
+        if ExAudit.tracked?(struct) do
           ExAudit.Schema.insert!(
             __MODULE__,
             repo,
@@ -171,7 +135,7 @@ defmodule ExAudit.Repo do
       def update!(struct, opts) do
         repo = get_dynamic_repo()
 
-        if tracked?(struct) do
+        if ExAudit.tracked?(struct) do
           ExAudit.Schema.update!(
             __MODULE__,
             repo,
@@ -186,7 +150,7 @@ defmodule ExAudit.Repo do
       def insert_or_update!(changeset, opts) do
         repo = get_dynamic_repo()
 
-        if tracked?(changeset) do
+        if ExAudit.tracked?(struct) do
           ExAudit.Schema.insert_or_update!(
             __MODULE__,
             repo,
@@ -201,7 +165,7 @@ defmodule ExAudit.Repo do
       def delete!(struct, opts) do
         repo = get_dynamic_repo()
 
-        if tracked?(struct) do
+        if ExAudit.tracked?(struct) do
           ExAudit.Schema.delete!(
             __MODULE__,
             repo,
