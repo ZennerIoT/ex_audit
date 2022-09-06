@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :ex_audit, ExAudit.Test.Repo,
   adapter: Ecto.Adapters.Postgres,
