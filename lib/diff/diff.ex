@@ -138,11 +138,7 @@ defmodule ExAudit.Diff do
     |> Enum.map(&reverse/1)
   end
 
-  ## PRIVATE
-
   defp primitive_struct?(type) do
-    primitive_structs = Application.get_env(:ex_audit, :primitive_structs, [])
-
-    type in primitive_structs
+    type in ExAudit.primitive_structs()
   end
 end

@@ -9,6 +9,10 @@ defmodule ExAudit do
   @spec version_schema :: module()
   def version_schema, do: @version_schema
 
+  @primitive_structs Application.compile_env(:ex_audit, :primitive_structs)
+  @spec primitive_structs :: list(module())
+  def primitive_structs, do: @primitive_structs
+
   @doc """
     Decides based on config `tracked_schema` wether the current schema is tracked or not.
     Can be overwritten for custom tracking logic.
