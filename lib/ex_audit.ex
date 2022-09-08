@@ -40,7 +40,7 @@ defmodule ExAudit do
     import Supervisor.Spec
 
     children = [
-      worker(ExAudit.CustomData, [])
+      worker(ExAudit.Tracker.AdditionalData, [])
     ]
 
     opts = [strategy: :one_for_one, name: ExAudit.Supervisor]

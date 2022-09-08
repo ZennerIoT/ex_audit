@@ -31,4 +31,11 @@ defmodule ExAudit.Tracking.AdditionalData do
     :ets.delete(ets, pid)
     {:noreply, ets}
   end
+
+  def merge_opts(opts \\ []) do
+    case Process.whereis(__MODULE__) do
+      nil -> opts
+      _ -> opts ++ [ex_audit_additional: get()]
+    end
+  end
 end

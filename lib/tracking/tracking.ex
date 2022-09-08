@@ -5,7 +5,6 @@ defmodule ExAudit.Tracking do
       old_data(action, struct_or_changeset),
       new_data(action, resulting_struct)
     )
-    compare_versions(action, old, new)
   end
 
   def compare_versions(action, old, new) do
@@ -106,12 +105,11 @@ defmodule ExAudit.Tracking do
   end
 
   defp old_data(:created, _), do: %{}
-  defp old_data(_, %Ecto.Changeset{data: struct}}, do: struct
+  defp old_data(_, %Ecto.Changeset{data: struct}), do: struct
   defp old_data(_, %{} = struct), do: struct
-  defp old_data(_, ni}), do: %{}
+  defp old_data(_, nil), do: %{}
 
   defp new_data(:created, struct), do: struct
   defp new_data(:updated, struct), do: struct
   defp new_data(:deleted, _), do: %{}
-
 end
