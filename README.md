@@ -48,7 +48,7 @@ Add ex_audit to your list of dependencies:
 ```elixir
 def deps do
   [
-    {:ex_audit, "~> 0.7"}
+    {:ex_audit, "~> 0.9"}
   ]
 end
 ```
@@ -75,9 +75,10 @@ In your config.exs, write something like this:
 
 ```elixir
 config :ex_audit,
+  ecto_repos: [MyApp.Repo],
   version_schema: MyApp.Version,
   tracked_schemas: [
-    MyApp.User,
+    MyApp.Accounts.User,
     MyApp.BlogPost,
     MyApp.Comment
   ]
@@ -88,13 +89,12 @@ struct. Add these under the key `:primitive_structs` in your config. So for exam
 
 ```elixir
 config :ex_audit,
-  ecto_repos: [ExAudit.Test.Repo],
-  version_schema: ExAudit.Test.Version,
+  ecto_repos: [MyApp.Repo],
+  version_schema: MyApp.Version,
   tracked_schemas: [
-    ExAudit.Test.User,
-    ExAudit.Test.BlogPost,
-    ExAudit.Test.BlogPost.Section,
-    ExAudit.Test.Comment
+    MyApp.Accounts.User,
+    MyApp.BlogPost,
+    MyApp.Comment
   ],
   primitive_structs: [
     Date
@@ -145,13 +145,13 @@ defmodule MyApp.Version do
     field :rollback, :boolean, default: false
 
     # custom fields
-    belongs_to :actor, MyApp.User
+    belongs_to :user, MyApp.Accounts.User
   end
 
   def changeset(struct, params \\ %{}) do
     struct
     |> cast(params, [:patch, :entity_id, :entity_schema, :action, :recorded_at, :rollback])
-    |> cast(params, [:actor_id]) # custom fields
+    |> cast(params, [:user_id]) # custom fields
   end
 end
 ```
@@ -184,7 +184,7 @@ defmodule MyApp.Migrations.AddVersions do
 
       # optional fields that you can define yourself
       # for example, it's a good idea to track who did the change
-      add :actor_id, references(:users, on_update: :update_all, on_delete: :nilify_all)
+      add :user_id, references(:users, on_update: :update_all, on_delete: :nilify_all)
     end
 
     # create this if you are going to have more than a hundred of thousands of versions
