@@ -121,7 +121,7 @@ defmodule ExAudit.Queryable do
       end
 
     opts =
-      Keyword.update(opts, :ex_audit_custom, [rollback: true], fn custom ->
+      Keyword.update(opts, :ex_audit_additional, [rollback: true], fn custom ->
         [{:rollback, true} | custom]
       end)
 

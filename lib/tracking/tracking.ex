@@ -1,29 +1,17 @@
 defmodule ExAudit.Tracking do
   def find_changes(action, struct_or_changeset, resulting_struct) do
-    old =
-      case {action, struct_or_changeset} do
-        {:created, _} -> %{}
-        {_, %Ecto.Changeset{data: struct}} -> struct
-        {_, %{} = struct} -> struct
-        {_, nil} -> %{}
-      end
-
-    new =
-      case action do
-        x when x in [:updated, :created] ->
-          resulting_struct
-
-        :deleted ->
-          %{}
-      end
-
+    compare_versions(
+      action,
+      old_data(action, struct_or_changeset),
+      new_data(action, resulting_struct)
+    )
     compare_versions(action, old, new)
   end
 
   def compare_versions(action, old, new) do
     schema = Map.get(old, :__struct__, Map.get(new, :__struct__))
 
-    if schema in ExAudit.tracked_schemas() do
+    if ExAudit.tracked?(schema) do
       assocs = schema.__schema__(:associations)
 
       patch =
@@ -54,7 +42,6 @@ defmodule ExAudit.Tracking do
   def track_change(module, action, changeset, resulting_struct, opts) do
     if not Keyword.get(opts, :ignore_audit, false) do
       changes = find_changes(action, changeset, resulting_struct)
-
       insert_versions(module, changes, opts)
     end
   end
@@ -63,8 +50,8 @@ defmodule ExAudit.Tracking do
     now = DateTime.utc_now()
     empty_version_schema = struct(ExAudit.version_schema(), %{})
 
-    custom_fields =
-      Keyword.get(opts, :ex_audit_custom, [])
+    additional_data =
+      Keyword.get(opts, :ex_audit_additional, [])
       |> Enum.into(%{})
 
     changes =
@@ -72,7 +59,7 @@ defmodule ExAudit.Tracking do
         change =
           change
           |> Map.put(:recorded_at, now)
-          |> Map.merge(custom_fields)
+          |> Map.merge(additional_data)
 
         ExAudit.version_schema()
         |> apply(:changeset, [empty_version_schema, change])
@@ -117,4 +104,14 @@ defmodule ExAudit.Tracking do
 
     insert_versions(module, deleted_structs, opts)
   end
+
+  defp old_data(:created, _), do: %{}
+  defp old_data(_, %Ecto.Changeset{data: struct}}, do: struct
+  defp old_data(_, %{} = struct), do: struct
+  defp old_data(_, ni}), do: %{}
+
+  defp new_data(:created, struct), do: struct
+  defp new_data(:updated, struct), do: struct
+  defp new_data(:deleted, _), do: %{}
+
 end

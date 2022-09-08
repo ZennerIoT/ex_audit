@@ -84,7 +84,7 @@ config :ex_audit,
   ]
 ```
 
-Optionally, you can tell ExAudit to treat certain structs as primitives and not record internal changes for the 
+Optionally, you can tell ExAudit to treat certain structs as primitives and not record internal changes for the
 struct. Add these under the key `:primitive_structs` in your config. So for example, if you configured `Date` to be treated as a primitive:
 
 ```elixir
@@ -196,10 +196,10 @@ end
 ### Recording custom data
 
 If you want to track custom data such as the user id, you can simply pass a keyword list with that data
-to the `:ex_audit_custom` option in any Repo function:
+to the `:ex_audit_additional` option in any Repo function:
 
 ```elixir
-MyApp.Repo.insert(changeset, ex_audit_custom: [user_id: conn.assigns.current_user.id])
+MyApp.Repo.insert(changeset, ex_audit_additional: [user_id: conn.assigns.current_user.id])
 ```
 
 Of course it is tedious to upgrade your entire codebase just to track the user ID for example, so you can
@@ -212,7 +212,7 @@ defmodule MyApp.ExAuditPlug do
   end
 
   def call(conn, _) do
-    ExAudit.track(user_id: conn.assigns.current_user.id)
+    ExAudit.additional_data(user_id: conn.assigns.current_user.id)
     conn
   end
 end
