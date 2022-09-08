@@ -166,12 +166,12 @@ defmodule ExAudit.Schema do
 
   defp augment_opts(opts) do
     opts
-    |> Keyword.put_new(:ex_audit_custom, [])
-    |> Keyword.update(:ex_audit_custom, [], fn custom_fields ->
+    |> Keyword.put_new(:ex_audit_additional, [])
+    |> Keyword.update(:ex_audit_additional, [], fn additional_data ->
       case Process.whereis(ExAudit.CustomData) do
         nil -> []
         _ -> ExAudit.CustomData.get()
-      end ++ custom_fields
+      end ++ additional_data
     end)
   end
 end

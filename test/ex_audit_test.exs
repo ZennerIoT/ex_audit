@@ -79,7 +79,7 @@ defmodule ExAuditTest do
         title: "My First Post"
       })
 
-    {:ok, blog_post} = Repo.insert(changeset, ex_audit_custom: [actor_id: user.id])
+    {:ok, blog_post} = Repo.insert(changeset, ex_audit_additional: [actor_id: user.id])
 
     version =
       Repo.one(
