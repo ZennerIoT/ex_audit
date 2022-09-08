@@ -35,7 +35,7 @@ defmodule ExAudit.Repo do
 
   All normal Ecto.Repo options will work the same, however, there are additional options specific to ex_audit:
 
-   * `:ex_audit_custom` - Keyword list of custom data that should be placed in new version entries. Entries in this
+   * `:ex_audit_additional` - Keyword list of custom data that should be placed in new version entries. Entries in this
      list overwrite data with the same keys from the ExAudit.track call
    * `:ignore_audit` - If true, ex_audit will not track changes made to entities
   """

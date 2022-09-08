@@ -5,19 +5,22 @@ defmodule ExAudit.Mixfile do
     [
       description: "Ecto auditing library that transparently tracks changes and can revert them",
       app: :ex_audit,
-      version: "0.9.0",
-      elixir: "~> 1.11",
+      version: "0.9.1",
+      elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       elixirc_paths: paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [coveralls: :test],
-      source_url: "https://github.com/zenneriot/ex_audit",
+      source_url: "https://github.com/carmagic/ex_audit",
       package: [
         licenses: ["MIT"],
-        maintainers: ["Moritz Schmale <ms@zenner-iot.com>"],
+        maintainers: [
+          "Moritz Schmale <ms@zenner-iot.com>",
+          "Aaron Tavistock <aaron@mycarmagic.com>"
+        ],
         links: %{
-          "GitHub" => "https://github.com/zenneriot/ex_audit",
+          "GitHub" => "https://github.com/carmagic/ex_audit",
           "Documentation" => "https://hexdocs.pm/ex_audit"
         }
       ],
