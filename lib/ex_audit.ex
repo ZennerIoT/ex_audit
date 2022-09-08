@@ -13,6 +13,10 @@ defmodule ExAudit do
   @spec primitive_structs :: list(module())
   def primitive_structs, do: @primitive_structs
 
+  @ignored_fields Application.compile_env(:ex_audit, :ignored_fields, [])
+  @spec ignored_fields :: list(atom())
+  def ignored_fields, do: @ignored_fields + [:__meta__, :__struct__]
+
   @doc """
     Decides based on config `tracked_schema` wether the current schema is tracked or not.
     Can be overwritten for custom tracking logic.

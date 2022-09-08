@@ -3,14 +3,11 @@ defprotocol ExAudit.Tracker do
   Enables you to influence which fields are tracked. In map_struct, remove or alter any fields
   you don't want tracked.
 
-  Most of the time, you can just use 
-  ```
-  @derive {ExAudit.Tracker, options}
-  ```
+  Most of the time, you can just use `@derive {ExAudit.Tracker, options}`
 
-  where options is either: 
+  where options is either:
 
-   * `except: [:foo, :bar]` to ignore certain fields or 
+   * `except: [:foo, :bar]` to ignore certain fields or
    * `only: [:baz, :foobar]` to track only those fields.
   """
 
@@ -20,7 +17,6 @@ defprotocol ExAudit.Tracker do
 end
 
 defimpl ExAudit.Tracker, for: Any do
-  @ignored_fields [:__meta__, :__struct__]
 
   defmacro __deriving__(module, struct, options) do
     deriving(module, struct, options)
@@ -53,6 +49,7 @@ defimpl ExAudit.Tracker, for: Any do
   end
 
   def map_struct(struct) do
-    Map.drop(struct, @ignored_fields)
+    ignored_fields = @ignored_fields ++ ExAudit.ignored_fields()
+    Map.drop(struct, ignored_fields)
   end
 end
