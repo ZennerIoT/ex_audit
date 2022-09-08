@@ -126,7 +126,7 @@ defmodule MyApp.Version do
   import Ecto.Changeset
 
   schema "versions" do
-    field :patch, ExAudit.Type.Patch
+    field :patch, :map
     field :entity_id, :integer
     field :entity_schema, ExAudit.Type.Schema
     field :action, Ecto.Enum, values: [:created, :updated, :deleted]
@@ -153,7 +153,7 @@ defmodule MyApp.Migrations.AddVersions do
 
   def change do
     create table(:versions) do
-      add :patch, :binary
+      add :patch, :jsonb
       add :entity_id, :integer
       add :entity_schema, :string
       add :action, :string
