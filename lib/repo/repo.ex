@@ -247,6 +247,4 @@ defmodule ExAudit.Repo do
   """
   @callback revert(version :: struct, opts :: list) ::
               {:ok, struct} | {:error, changeset :: Ecto.Changeset.t()}
-
-  @callback default_options(operation :: atom) :: keyword
 end
