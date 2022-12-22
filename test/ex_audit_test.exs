@@ -276,4 +276,23 @@ defmodule ExAuditTest do
 
     assert 2 = Repo.aggregate(query, :count, :id)
   end
+
+  describe "history_query/1" do
+    setup do
+      params = %{
+        name: "Foo",
+        email: "foo@bar.com"
+      }
+
+      changeset = User.changeset(%User{}, params)
+
+      {:ok, user} = Repo.insert(changeset)
+
+      %{user: user}
+    end
+
+    test "returns a queryable", %{user: user} do
+     assert user |> Repo.history_query() |> Repo.all() |> Enum.count() == 1
+    end
+  end
 end

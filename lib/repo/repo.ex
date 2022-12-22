@@ -57,7 +57,24 @@ defmodule ExAudit.Repo do
         delete!: 2
       )
 
-      defp tracked?(struct_or_changeset) do
+      @doc """
+        Decides based on config `tracked_schema` wether the current schema is tracked or not.
+        Can be overwritten for custom tracking logic.
+
+        E.g.
+        ```
+          def tracked?(struct_or_schema) do
+            tracked? =
+              case Process.get(__MODULE__) do
+                %{tracked?: true} -> true
+                _ -> false
+              end
+
+            tracked? && super(struct_or_schema)
+          end
+        ```
+      """
+      def tracked?(struct_or_changeset) do
         tracked_schemas = Application.get_env(:ex_audit, :tracked_schemas, [])
 
         schema =
@@ -73,6 +90,8 @@ defmodule ExAudit.Repo do
       end
 
       @compile {:inline, tracked?: 1}
+
+      defoverridable(tracked?: 1)
 
       def insert(struct, opts) do
         if tracked?(struct) do
@@ -178,13 +197,24 @@ defmodule ExAudit.Repo do
         end
       end
 
-      # ExAudit.Repo behaviour
+      def default_options(_operation), do: []
+
+      defoverridable(default_options: 1)
+
+      defoverridable(child_spec: 1)
+
+      # additional functions
+
       def history(struct, opts \\ []) do
         ExAudit.Queryable.history(__MODULE__, struct, opts)
       end
 
       def revert(version, opts \\ []) do
         ExAudit.Queryable.revert(__MODULE__, version, opts)
+      end
+
+      def history_query(struct) do
+        ExAudit.Queryable.history_query(struct)
       end
 
       def latest(struct) do
@@ -197,7 +227,7 @@ defmodule ExAudit.Repo do
   Gathers the version history for the given struct, ordered by the time the changes
   happened from newest to oldest.
   ### Options
-   * `:render_structs` if true, renders the _resulting_ struct of the patch for every version in its history.
+   * `:render_struct` if true, renders the _resulting_ struct of the patch for every version in its history.
      This will shift the ids of the versions one down, so visualisations are correct and corresponding "Revert"
      buttons revert the struct back to the visualized state.
      Will append an additional version that contains the oldest ID and the oldest struct known. In most cases, the
@@ -205,6 +235,12 @@ defmodule ExAudit.Repo do
      `false` by default.
   """
   @callback history(struct, opts :: list) :: [version :: struct]
+
+  @doc """
+  Returns a query that gathers the version history for the given struct, ordered by the time the changes
+  happened from newest to oldest.
+  """
+  @callback history_query(struct) :: Ecto.Query.t()
 
   @doc """
   Loads the most recent version record for the given struct.
@@ -220,4 +256,6 @@ defmodule ExAudit.Repo do
   """
   @callback revert(version :: struct, opts :: list) ::
               {:ok, struct} | {:error, changeset :: Ecto.Changeset.t()}
+
+  @callback default_options(operation :: atom) :: keyword
 end
