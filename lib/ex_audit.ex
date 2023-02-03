@@ -2,10 +2,8 @@ defmodule ExAudit do
   use Application
 
   def start(_, _) do
-    import Supervisor.Spec
-
     children = [
-      worker(ExAudit.CustomData, [])
+      ExAudit.CustomData
     ]
 
     opts = [strategy: :one_for_one, name: ExAudit.Supervisor]
