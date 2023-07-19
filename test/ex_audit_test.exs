@@ -258,7 +258,7 @@ defmodule ExAuditTest do
 
     changeset = User.changeset(user, %{transient_field: 3})
 
-    assert {:ok, user} = Repo.update(changeset)
+    assert {:ok, _user} = Repo.update(changeset)
   end
 
   describe "history_query/1" do
@@ -276,7 +276,7 @@ defmodule ExAuditTest do
     end
 
     test "returns a queryable", %{user: user} do
-     assert user |> Repo.history_query() |> Repo.all() |> Enum.count() == 1
+      assert user |> Repo.history_query() |> Repo.all() |> Enum.count() == 1
     end
   end
 end

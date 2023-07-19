@@ -1,9 +1,9 @@
 defmodule ExAudit.Schema do
   require Logger
 
-  def insert_all(module, name, schema_or_source, entries, tuplet = {_adapter_meta, opts}) do
+  def insert_all(module, name, schema_or_source, entries, tuplet = {_adapter_meta, _opts}) do
     # TODO!
-    opts = augment_opts(opts)
+    # opts = augment_opts(opts)
     Ecto.Repo.Schema.insert_all(module, name, schema_or_source, entries, tuplet)
   end
 

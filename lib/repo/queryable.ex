@@ -67,13 +67,13 @@ defmodule ExAudit.Queryable do
     end
   end
 
-  def history_query(%{id: id, __struct__: struct}) do
+  def history_query(module, %{id: id, __struct__: struct}) do
     from(
-        v in version_schema(),
-        where: v.entity_id == ^id,
-        where: v.entity_schema == ^struct,
-        order_by: [desc: :recorded_at]
-      )
+      v in version_schema(module),
+      where: v.entity_id == ^id,
+      where: v.entity_schema == ^struct,
+      order_by: [desc: :recorded_at]
+    )
   end
 
   @drop_fields [:__meta__, :__struct__]
@@ -141,7 +141,7 @@ defmodule ExAudit.Queryable do
         _ -> res
       end
     else
-      Logger.warn([
+      Logger.warning([
         "Can't revert ",
         inspect(version),
         " because the entity would still be deleted"

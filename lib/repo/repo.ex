@@ -92,6 +92,7 @@ defmodule ExAudit.Repo do
       end
 
       defoverridable(tracked?: 2)
+
       def insert(struct, opts) do
         repo = get_dynamic_repo()
 
@@ -225,7 +226,7 @@ defmodule ExAudit.Repo do
       end
 
       def history_query(struct) do
-        ExAudit.Queryable.history_query(struct)
+        ExAudit.Queryable.history_query(__MODULE__, struct)
       end
     end
   end
