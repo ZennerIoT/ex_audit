@@ -168,7 +168,7 @@ defmodule MyApp.Migrations.AddVersions do
       add :patch, :binary
 
       # supports UUID and other types as well
-      add :entity_id, :integer
+      add :entity_id, :bigint
 
       # name of the table the entity is in
       add :entity_schema, :string
