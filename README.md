@@ -55,15 +55,13 @@ end
 
 For older ecto versions than 3.2, check out what to do in the [Ecto Versions](#ecto-versions) section.
 
-You have to hook `ExAudit.Repo` to your repo:
+You have to hook `ExAudit.Repo` to your repo by replacing `use Ecto.Repo` with `use ExAudit.Repo`:
 
 ```elixir
 defmodule MyApp.Repo do
-  use Ecto.Repo,
+  use ExAudit.Repo,
     otp_app: :my_app,
     adapter: Ecto.Adapters.Postgres
-
-  use ExAudit.Repo
 end
 ```
 
