@@ -8,7 +8,7 @@ defmodule RevertTest do
   test "should revert changes" do
     user = Util.create_user()
 
-    ExAudit.track(actor_id: user.id)
+    ExAudit.track(actor_id: user.user_id)
 
     user2 = Util.create_user("Horst Dieter Schaf", "horst.dieter@schaf.de")
 
@@ -21,7 +21,7 @@ defmodule RevertTest do
     version =
       Repo.one(
         from(v in Version,
-          where: v.entity_id == ^user2.id,
+          where: v.entity_id == ^user2.user_id,
           where: v.entity_schema == ^User,
           where: v.action == ^:updated
         )
@@ -36,7 +36,7 @@ defmodule RevertTest do
     version_rollback =
       Repo.one(
         from(v in Version,
-          where: v.entity_id == ^user2.id,
+          where: v.entity_id == ^user2.user_id,
           where: v.entity_schema == ^User,
           where: v.action == ^:updated,
           where: v.rollback == true
@@ -56,7 +56,7 @@ defmodule RevertTest do
     version_rollback =
       Repo.one(
         from(v in Version,
-          where: v.entity_id == ^user2.id,
+          where: v.entity_id == ^user2.user_id,
           where: v.entity_schema == ^User,
           where: v.action == ^:updated,
           where: v.rollback == true,
@@ -74,6 +74,6 @@ defmodule RevertTest do
     assert [version] = Repo.history(user)
     assert {:ok, nil} = Repo.revert(version)
 
-    assert nil == Repo.get(User, user.id)
+    assert nil == Repo.get(User, user.user_id)
   end
 end

@@ -37,8 +37,10 @@ defmodule ExAudit.Tracking do
           []
 
         patch ->
+          [primary_key] = schema.__schema__(:primary_key)
+
           params = %{
-            entity_id: Map.get(old, :id) || Map.get(new, :id),
+            entity_id: Map.get(old, primary_key) || Map.get(new, primary_key),
             entity_schema: schema,
             patch: patch,
             action: action

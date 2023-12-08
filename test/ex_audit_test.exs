@@ -22,7 +22,7 @@ defmodule ExAuditTest do
     version =
       Repo.one(
         from(v in Version,
-          where: v.entity_id == ^user.id,
+          where: v.entity_id == ^user.user_id,
           where: v.entity_schema == ^User,
           where: v.action == ^:created
         )
@@ -43,7 +43,7 @@ defmodule ExAuditTest do
     version =
       Repo.one(
         from(v in Version,
-          where: v.entity_id == ^user.id,
+          where: v.entity_id == ^user.user_id,
           where: v.entity_schema == ^User,
           where: v.action == ^:updated
         )
@@ -57,7 +57,7 @@ defmodule ExAuditTest do
     version =
       Repo.one(
         from(v in Version,
-          where: v.entity_id == ^user.id,
+          where: v.entity_id == ^user.user_id,
           where: v.entity_schema == ^User,
           where: v.action == ^:deleted
         )
@@ -75,11 +75,11 @@ defmodule ExAuditTest do
 
     changeset =
       BlogPost.changeset(%BlogPost{}, %{
-        author_id: user.id,
+        author_id: user.user_id,
         title: "My First Post"
       })
 
-    {:ok, blog_post} = Repo.insert(changeset, ex_audit_custom: [actor_id: user.id])
+    {:ok, blog_post} = Repo.insert(changeset, ex_audit_custom: [actor_id: user.user_id])
 
     version =
       Repo.one(
@@ -90,7 +90,7 @@ defmodule ExAuditTest do
         )
       )
 
-    assert version.actor_id == user.id
+    assert version.actor_id == user.user_id
   end
 
   test "should track insert_or_update!" do
@@ -110,7 +110,7 @@ defmodule ExAuditTest do
     created =
       Repo.one(
         from(v in Version,
-          where: v.entity_id == ^user.id,
+          where: v.entity_id == ^user.user_id,
           where: v.entity_schema == ^User,
           where: v.action == ^:created
         )
@@ -119,7 +119,7 @@ defmodule ExAuditTest do
     updated =
       Repo.one(
         from(v in Version,
-          where: v.entity_id == ^user.id,
+          where: v.entity_id == ^user.user_id,
           where: v.entity_schema == ^User,
           where: v.action == ^:updated
         )
@@ -128,7 +128,7 @@ defmodule ExAuditTest do
     assert 2 =
              Repo.one(
                from(v in Version,
-                 where: v.entity_id == ^user.id,
+                 where: v.entity_id == ^user.user_id,
                  where: v.entity_schema == ^User,
                  select: count(v.id)
                )
@@ -163,7 +163,7 @@ defmodule ExAuditTest do
     created =
       Repo.one(
         from(v in Version,
-          where: v.entity_id == ^user.id,
+          where: v.entity_id == ^user.user_id,
           where: v.entity_schema == ^User,
           where: v.action == ^:created
         )
@@ -172,7 +172,7 @@ defmodule ExAuditTest do
     updated =
       Repo.one(
         from(v in Version,
-          where: v.entity_id == ^user.id,
+          where: v.entity_id == ^user.user_id,
           where: v.entity_schema == ^User,
           where: v.action == ^:updated
         )
@@ -181,7 +181,7 @@ defmodule ExAuditTest do
     assert 2 =
              Repo.one(
                from(v in Version,
-                 where: v.entity_id == ^user.id,
+                 where: v.entity_id == ^user.user_id,
                  where: v.entity_schema == ^User,
                  select: count(v.id)
                )
@@ -206,11 +206,11 @@ defmodule ExAuditTest do
 
     changeset =
       BlogPost.changeset(%BlogPost{}, %{
-        author_id: user.id,
+        author_id: user.user_id,
         title: "My Second Post"
       })
 
-    ExAudit.track(actor_id: user.id)
+    ExAudit.track(actor_id: user.user_id)
 
     {:ok, blog_post} = Repo.insert(changeset)
 
@@ -223,7 +223,7 @@ defmodule ExAuditTest do
         )
       )
 
-    assert version.actor_id == user.id
+    assert version.actor_id == user.user_id
   end
 
   test "does not track changes to ignored fields" do
@@ -239,7 +239,7 @@ defmodule ExAuditTest do
 
     query =
       from(v in Version,
-        where: v.entity_id == ^user.id,
+        where: v.entity_id == ^user.user_id,
         where: v.entity_schema == ^User
       )
 
@@ -261,7 +261,7 @@ defmodule ExAuditTest do
     end
 
     test "returns a queryable", %{user: user} do
-     assert user |> Repo.history_query() |> Repo.all() |> Enum.count() == 1
+      assert user |> Repo.history_query() |> Repo.all() |> Enum.count() == 1
     end
   end
 end

@@ -8,15 +8,15 @@ defmodule AssocTest do
   test "comment lifecycle tracked" do
     user = Util.create_user()
 
-    ExAudit.track(actor_id: user.id)
+    ExAudit.track(actor_id: user.user_id)
 
     params = %{
       title: "Controversial post",
-      author_id: user.id,
+      author_id: user.user_id,
       comments: [
         %{
           body: "lorem impusdrfnia",
-          author_id: user.id
+          author_id: user.user_id
         }
       ]
     }
@@ -26,7 +26,7 @@ defmodule AssocTest do
 
     [%{actor_id: actor_id}] = comment_history = Repo.history(comment)
     assert length(comment_history) == 1
-    assert actor_id == user.id
+    assert actor_id == user.user_id
   end
 
   test "structs configured as primitives are treated as primitives" do
@@ -52,23 +52,23 @@ defmodule AssocTest do
   test "should track cascading deletions (before they happen)" do
     user = Util.create_user()
 
-    ExAudit.track(actor_id: user.id)
+    ExAudit.track(actor_id: user.user_id)
 
     params = %{
       title: "Controversial post",
-      author_id: user.id,
+      author_id: user.user_id,
       comments: [
         %{
           body: "lorem impusdrfnia",
-          author_id: user.id
+          author_id: user.user_id
         },
         %{
           body: "That's a nice article",
-          author_id: user.id
+          author_id: user.user_id
         },
         %{
           body: "We want more of this CONTENT",
-          author_id: user.id
+          author_id: user.user_id
         }
       ]
     }
@@ -95,7 +95,7 @@ defmodule AssocTest do
   test "should return changesets from constraint errors" do
     user = Util.create_user()
 
-    ch = UserGroup.changeset(%UserGroup{}, %{name: "a group", user_id: user.id})
+    ch = UserGroup.changeset(%UserGroup{}, %{name: "a group", user_id: user.user_id})
     {:ok, _group} = Repo.insert(ch)
 
     import Ecto.Changeset
@@ -103,7 +103,7 @@ defmodule AssocTest do
     deletion =
       user
       |> change
-      |> no_assoc_constraint(:groups)
+      |> no_assoc_constraint(:groups, name: :user_groups_user_id_fkey)
 
     assert {:error, %Ecto.Changeset{}} = Repo.delete(deletion)
   end
