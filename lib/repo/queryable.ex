@@ -32,12 +32,17 @@ defmodule ExAudit.Queryable do
         #   from v in query,
         #     where: v.entity_id == subquery(from q in struct, select: q.id),
         #     where: v.entity_schema == ^struct
-        %{__struct__: struct, id: id} when nil not in [struct, id] ->
-          from(
-            v in query,
-            where: v.entity_id == ^id,
-            where: v.entity_schema == ^struct
-          )
+        %{__struct__: schema} when not is_nil(schema) ->
+          [primary_key] = schema.__schema__(:primary_key)
+          id = Map.get(struct, primary_key)
+
+          if not is_nil(id) do
+            from(
+              v in query,
+              where: v.entity_id == ^id,
+              where: v.entity_schema == ^schema
+            )
+          end
       end
 
     versions = Ecto.Repo.Queryable.all(module, query, Ecto.Repo.Supervisor.tuplet(module, opts))
@@ -74,13 +79,16 @@ defmodule ExAudit.Queryable do
     end
   end
 
-  def history_query(%{id: id, __struct__: struct}) do
+  def history_query(%{__struct__: schema} = struct) do
+    [primary_key] = schema.__schema__(:primary_key)
+    id = Map.get(struct, primary_key)
+
     from(
-        v in version_schema(),
-        where: v.entity_id == ^id,
-        where: v.entity_schema == ^struct,
-        order_by: [desc: :recorded_at]
-      )
+      v in version_schema(),
+      where: v.entity_id == ^id,
+      where: v.entity_schema == ^schema,
+      order_by: [desc: :recorded_at]
+    )
   end
 
   @drop_fields [:__meta__, :__struct__]
@@ -103,7 +111,12 @@ defmodule ExAudit.Queryable do
 
     # get the referenced struct as it exists now
 
-    struct = module.one(from(s in version.entity_schema, where: s.id == ^version.entity_id))
+    [primary_key] = version.entity_schema.__schema__(:primary_key)
+
+    struct =
+      module.one(
+        from(s in version.entity_schema, where: field(s, ^primary_key) == ^version.entity_id)
+      )
 
     result = Enum.reduce(versions, struct, &_revert/2)
 

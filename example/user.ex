@@ -4,6 +4,7 @@ defmodule ExAudit.Test.User do
 
   @derive {ExAudit.Tracker, except: [:transient_field]}
 
+  @primary_key {:user_id, :id, autogenerate: true}
   schema "users" do
     field :email, :string
     field :name, :string
